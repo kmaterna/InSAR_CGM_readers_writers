@@ -1,8 +1,0 @@
-Directions for Katia to package up the SCEC CGM InSAR HDF5 file from local files
-
-1. Clone CGM_Readers repo onto your local machine. More specific path info to come. 
-2. Get into directory where you want to do this work.  
-3. From working directory, call "$PATH_TO_BIN/generage_empty_configs.py ."  This will generate two empty files, "file_level_config.txt" and "TRAC_metadata.txt"
-4. Manually fill in the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. File I/O information specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Make sure it can be properly found in the file_level_config.
-5. From the working directory, call "$PATH_TO_BIN/write_cgm_hdf5.py file_level_config.txt"
-6. Check out your brand new HDF5 file. 
