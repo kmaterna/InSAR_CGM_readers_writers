@@ -1,0 +1,19 @@
+[track-config]
+track_name = D071
+platform = Sentinel-1
+orbit_direction = descending
+polygon_boundaries = 0/0, 0/0, 0/0, 0/0
+geocoded_increment = -I0.002/0.002
+geocoded_range = -R-119.132/-115.936/32.988/36.432
+approx_posting = 200m
+grdsample_flags = -R-119.132/-115.936/32.988/36.432 -I0.002/0.002 -rp -fg -nl
+los_sign_convention = positive towards satellite, negative away from satellite
+lkv_sign_convention = vector from ground to satellite in local enu coordinates
+time_series_units = mm
+velocity_units = mm/yr
+start_time = 20150514
+end_time = 20190704
+n_times = 95
+reference_image = 20190411
+reference_frame = GNSS_P617/-116.57164/35.32064
+

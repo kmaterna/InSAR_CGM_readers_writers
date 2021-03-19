@@ -1,2 +1,5 @@
 .idea/*
 sample_directory_tree/*
+__pycache__/*
+CGM_Readers/__pycache__/*
+CGM_Readers/library/__pycache__/*

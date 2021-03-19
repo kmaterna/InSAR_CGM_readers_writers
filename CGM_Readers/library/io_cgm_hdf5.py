@@ -1,17 +1,15 @@
 """
-Utility function to read SCEC CGM Working Group results (i.e., from a google drive) and package them into HDF5 file.
+Utility function to read/write SCEC CGM InSAR Working Group results packaged into HDF5 file.
 Will be called when the product is ready to be packaged and distributed.
-Placeholder right now.
 """
 
 import h5py
 
-
-def read_cgm_working_group_data(input_filenames):
+def read_cgm_hdf5(input_filename):
     """
-    Input function for data of CGM working group. Placeholder.
+    Input function for HDF5 file of CGM working group.
 
-    :param input_filenames: a list of some kind, not defined yet.
+    :param input_filename: an HDF5 file
     :return: several data structures of some kind, not defined yet.
     """
     cgm_data_structure = [];  # placeholder
@@ -27,9 +25,3 @@ def write_cgm_hdf5(cgm_data_structure, output_filename):
     :type output_filename: string
     """
     return;
-
-
-if __name__ == "__main__":
-    scec_filenames = [];
-    cgm_data_structure = read_cgm_working_group_data(scec_filenames);
-    write_cgm_hdf5(cgm_data_structure, "SCEC_CGM_INSAR_v0.hdf5");

@@ -13,17 +13,19 @@ We aim to present the SCEC CGM InSAR Product as a single HDF5 file that can be p
 The current HDF5 structure is envisioned as follows: 
 ```bash
 SCEC_CGM_InSAR.hdf5
+    ├── Product_Metadata
+    │     ├── contributors_txt
+    │     ├── version, production_date
+    │     └── documentation_link, website_link, citation_info 
     └── Track_D071
         ├── Reference
         │   ├── Look_Vectors
         │   │   ├── unit_east_ll_grd
         │   │   ├── unit_north_ll_grd
-        │   │   └── unit_up_ll_grd
-        │   ├── contributors_txt
-        │   ├── more_information_txt
-        │   ├── polygon_boundaries_txt
-        │   ├── production_date_txt
-        │   └── refpixel_txt
+        │   │   └── unit_up_ll_grd       
+        │   ├── units, conventions, start/end dates
+        │   ├── polygon_boundaries_txt, -R, -I, sign convention, lkv_sign_convention
+        │   └── ref_frame_txt
         ├── Time_Series
         │   ├── Time_Array
         │   │   └── dates_txt
@@ -38,8 +40,7 @@ SCEC_CGM_InSAR.hdf5
             ├── Uncertainty
             │   └── velo_unc_grd
             └── Velocities
-                ├── velocities_grd
-                └── velocities_png
+                └── velocities_grd
 ```
 
 ### NECESSARY TOOLS
