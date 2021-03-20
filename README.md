@@ -14,7 +14,7 @@ The current HDF5 structure is envisioned as follows:
 ```bash
 SCEC_CGM_InSAR.hdf5
     ├── Product_Metadata
-        └── Attributes
+    │   └── Attributes
     │     ├── version, data_production_date
     │     ├── scec_website_link, documentation_link, citation_info 
     │     └── contributing_institutions, contributing_researchers 
@@ -36,7 +36,7 @@ SCEC_CGM_InSAR.hdf5
         │   └── lkv_up_ll_grd   
         ├── Time_Series
         │   ├── Time_Array
-        │   │   └── dates_txt
+        │   │   └── dates
         │   ├── Time_Series_Grids
         │   │   ├── 20150327_ll_grd
         │   │   ├── 20150421_ll_grd
@@ -52,8 +52,8 @@ SCEC_CGM_InSAR.hdf5
 ### NECESSARY TOOLS
 To implement the HDF5 file format, the CGM team must create:
 1. A tool to extract a certain pixel's time series from the HDF5 and convert it into a geoCSV. 
-2. Several example functions to read the full SCEC HDF5 file into a practical data structure, as an advanced user would do, in several commonly used programming languages (Python, Matlab, others?).
-3. Function(s) to construct the SCEC CGM HDF5 from the CGM analysis [for internal use only].
+2. Example reader functions to read the full SCEC HDF5 file into a practical data structure, as an advanced user would do, in several commonly used programming languages (~~Python~~, Matlab, others?). **Python Done**
+3. ~~Function(s) to construct the SCEC CGM HDF5 from the CGM analysis [for internal use only].~~ **DONE**  
 4. Detailed documentation of the CGM product.
 
 
@@ -63,6 +63,12 @@ Directions for Katia to package up the SCEC CGM InSAR HDF5 file from local files
 1. Clone CGM_Readers repo onto your local machine in a directory that is on your PYTHONPATH.
 2. Get into directory where you want to do this work.  
 3. From working directory, call ```$PATH_TO_BIN/generage_empty_configs.py .``` in a terminal.  This will generate two empty files into the working directory, "file_level_config.txt" and "TRAC_metadata.txt"
-4. Manually fill in the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. Information regarding highest-level product metadata or file I/O options specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Just make sure it can be properly found in the file_level_config.
+4. Manually fill in all the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. Information regarding highest-level product metadata or file I/O options specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Just make sure it can be properly found in the file_level_config.
 5. From the working directory, call ```$PATH_TO_BIN/write_cgm_hdf5.py file_level_config.txt```
-6. Check out your brand new HDF5 file. 
+6. Check out your brand new HDF5 file.  I check the file out on my own computer this way: 
+```python
+from CGM_Readers import library
+
+filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
+library.io_cgm_hdf5.read_cgm_hdf5_python(filename);
+```

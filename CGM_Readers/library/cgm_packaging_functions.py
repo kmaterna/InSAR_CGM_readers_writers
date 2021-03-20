@@ -45,9 +45,9 @@ def read_one_track_data(fileio_config_dict):
     ts_array_list = [];
     for onefile in ts_grd_files:
         datestr = re.findall(r"\d\d\d\d\d\d\d\d", onefile)[0];
-        ts_datestr_list.append(datestr);
+        ts_datestr_list.append(str(datestr));
         [_, _, ts_array] = read_netcdf4(onefile);
-        ts_array_list.append(ts_array)
+        ts_array_list.append(ts_array);
     ts_datastructure = [ts_datestr_list, ts_array_list];
 
     # PACKAGING DATA STRUCTURE

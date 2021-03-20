@@ -21,4 +21,4 @@ def welcome_and_parse_runstring():
 
 if __name__ == "__main__":
     args = welcome_and_parse_runstring();
-    library.cgm_packaging_coordinators.drive_scec_hdf5_packaging(args.config);
+    library.cgm_packaging_functions.drive_scec_hdf5_packaging(args.config);

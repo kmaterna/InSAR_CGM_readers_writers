@@ -15,7 +15,7 @@ def read_cgm_hdf5_python(input_filename):
     :param input_filename: an HDF5 file
     :return: several data structures of some kind, not defined yet.
     """
-    print("Reading hdf5 file %s " % input_filename);
+    print("\n\nReading hdf5 file %s in Python " % input_filename);
     hf = h5py.File(input_filename, 'r');
 
     # Print all available top levels:
@@ -62,7 +62,7 @@ def read_cgm_hdf5_python(input_filename):
         # Explicitly print the time steps used in this time series file.
         print("Time steps: ")
         ds = TS.get('Time_Array');
-        print([str(x) for x in np.array(ds)]);
+        print([x.decode() for x in np.array(ds)]);
         print("\n");
 
     hf.close();
