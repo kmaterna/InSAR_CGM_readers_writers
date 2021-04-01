@@ -8,9 +8,10 @@ from datetime import date
 import numpy as np
 
 
-def read_cgm_hdf5_python(input_filename):
+def read_cgm_hdf5_demo_python(input_filename):
     """
     Input function for HDF5 file of CGM working group. An example of how to read this file in Python.
+    This function would be given to advanced users for parsing the entire CGM HDF5 file.
 
     :param input_filename: an HDF5 file
     :return: several data structures of some kind, not defined yet.
@@ -69,13 +70,67 @@ def read_cgm_hdf5_python(input_filename):
     return None;
 
 
-def write_cgm_hdf5(cgm_data_structure, configobj, output_filename):
+def read_cgm_hdf5_full_data(input_filename):
+    """
+    Input function for HDF5 file of CGM working group with velocities and time series.
+    Only operates on full HDF5 files, not velocity-only
+
+    :param input_filename: an HDF5 file
+    :return: internal data structure for the data in an hdf5 file.
+        - one element for each track
+        - in each track: [metadata_dict, data]
+        - data = [lkv_data, velocities, time_series]
+    """
+    print("Reading file %s " % input_filename);
+    cgm_data_structure = [];
+    hf = h5py.File(input_filename, 'r');
+    # Read each track in the hdf file
+    all_keys = [x for x in hf.keys()];  # returns a list of the top level directories
+    all_keys.remove('Product_Metadata');  # return the keys that correspond to tracks of InSAR data
+    for track in all_keys:
+        track_data = hf.get(track);
+        track_dict = {};
+
+        # Get metadata
+        print("Reading track %s " % track_data.attrs["track_name"]);
+        for item in track_data.attrs.keys():
+            track_dict[item] = track_data.attrs[item];
+
+        # Get look vectors
+        look_vector_object = [];
+        Grid_Info = track_data.get('Grid_Info');
+        look_vector_object.append(np.array(Grid_Info.get("lon")));
+        look_vector_object.append(np.array(Grid_Info.get("lat")));
+        look_vector_object.append(np.array(Grid_Info.get("lkv_E")));
+        look_vector_object.append(np.array(Grid_Info.get("lkv_N")));
+        look_vector_object.append(np.array(Grid_Info.get("lkv_U")));
+
+        # Get velocities
+        velocity_object = [];
+        Velocities = track_data.get('Velocities');
+        velocity_object.append(np.array(Velocities.get("velocities")));
+
+        # Get time series
+        time_series_object = [];
+        TS = track_data.get('Time_Series');
+        time_series_object.append(np.array(TS.get('Time_Array')));
+        time_series_object.append(np.array(TS.get('Time_Series_Grids')));
+
+        track_data_internal_struct = [look_vector_object, velocity_object, time_series_object];
+        track_data_package = [track_dict, track_data_internal_struct];
+        cgm_data_structure.append(track_data_package);
+    return cgm_data_structure;
+
+
+def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocities=True, write_time_series=True):
     """
     Output function to create HDF5 file from CGM working group's data.
 
     :param cgm_data_structure: a structure of some kind, not defined yet.
     :param configobj: configobj read from file-level config file
     :param output_filename: the name of the HDF5 file that will be written.
+    :param write_velocities: bool, whether to write velocities into the hdf5 file
+    :param write_time_series: bool, whether to write time series into the hdf5 file
     :type output_filename: string
     """
     print("Writing file %s " % output_filename);
@@ -103,6 +158,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename):
         track_data.attrs["grdsample_flags"] = item["track-config"]["grdsample_flags"];
         track_data.attrs["los_sign_convention"] = item["track-config"]["los_sign_convention"];
         track_data.attrs["lkv_sign_convention"] = item["track-config"]["lkv_sign_convention"];
+        track_data.attrs["coordinate_reference_system"] = item["track-config"]["coordinate_reference_system"];
         track_data.attrs["time_series_units"] = item["track-config"]["time_series_units"];
         track_data.attrs["velocity_units"] = item["track-config"]["velocity_units"];
         track_data.attrs["time_start"] = item["track-config"]["start_time"];
@@ -122,15 +178,17 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename):
         grid_group.create_dataset('lkv_U', data=lkv_datastruct[4]);
 
         # Package velocity information
-        vel_datastruct = data[1];
-        vel_group = track_data.create_group('Velocities')
-        vel_group.create_dataset('velocities', data=vel_datastruct[0]);
+        if write_velocities:
+            vel_datastruct = data[1];
+            vel_group = track_data.create_group('Velocities')
+            vel_group.create_dataset('velocities', data=vel_datastruct[0]);
 
         # Package time series information
-        ts_datastructure = data[2];
-        ts_group = track_data.create_group('Time_Series');
-        ts_group.create_dataset('Time_Array', data=ts_datastructure[0]);
-        ts_group.create_dataset('Time_Series_Grids', data=ts_datastructure[1]);
+        if write_time_series:
+            ts_datastructure = data[2];
+            ts_group = track_data.create_group('Time_Series');
+            ts_group.create_dataset('Time_Array', data=ts_datastructure[0]);
+            ts_group.create_dataset('Time_Series_Grids', data=ts_datastructure[1]);
 
     hf.close();
     return;

@@ -20,7 +20,11 @@ def drive_scec_hdf5_packaging(fileio_config_file):
         onetrack_config = io_cgm_configs.read_track_metadata_config(toplevel_config[one_track]["metadata_file"]);
         onetrack_data = read_one_track_data(toplevel_config[one_track]);
         tracks_datastructure.append([onetrack_config, onetrack_data]);
-    io_cgm_hdf5.write_cgm_hdf5(tracks_datastructure, toplevel_config, toplevel_config["general-config"]["hdf5_file"]);
+    io_cgm_hdf5.write_cgm_hdf5(tracks_datastructure, toplevel_config, toplevel_config["general-config"]["hdf5_file"],
+                               write_velocities=True, write_time_series=True);
+    io_cgm_hdf5.write_cgm_hdf5(tracks_datastructure, toplevel_config,
+                               toplevel_config["general-config"]["hdf5_vel_file"], write_velocities=True,
+                               write_time_series=False);
     return;
 
 

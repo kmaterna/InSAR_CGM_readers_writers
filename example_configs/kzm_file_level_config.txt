@@ -1,5 +1,6 @@
 [general-config]
-hdf5_file = SCEC_CGM_InSAR_v0_0_1.hdf5
+hdf5_file = test_SCEC_CGM_InSAR_v0_0_1.hdf5
+hdf5_vel_file = test_SCEC_CGM_InSAR_v0_0_1_vel_only.hdf5
 tracks = [D071]
 scec_cgm_version = 0.0.1
 website_link = [future]

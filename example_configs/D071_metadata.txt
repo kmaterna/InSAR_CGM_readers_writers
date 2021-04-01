@@ -9,6 +9,7 @@ approx_posting = 200m
 grdsample_flags = -R-119.132/-115.936/32.988/36.432 -I0.002/0.002 -rp -fg -nl
 los_sign_convention = positive towards satellite, negative away from satellite
 lkv_sign_convention = vector from ground to satellite in local enu coordinates
+coordinate_reference_system = 
 time_series_units = mm
 velocity_units = mm/yr
 start_time = 20150514

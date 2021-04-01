@@ -24,6 +24,7 @@ SCEC_CGM_InSAR.hdf5
         │   ├── polygon_boundaries
         │   ├── geocoded_increment, geocoded_range, approx_posting, grdsample_flags
         │   ├── los_sign_convention, lkv_sign_convention
+        │   ├── coordinate_reference_system
         │   ├── time_series_units, velocity_units
         │   ├── start_time, end_time, n_times
         │   ├── reference_image
@@ -70,5 +71,5 @@ Directions for Katia to package up the SCEC CGM InSAR HDF5 file from local files
 from CGM_Readers import library
 
 filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
-library.io_cgm_hdf5.read_cgm_hdf5_python(filename);
+library.io_cgm_hdf5.read_cgm_hdf5_demo_python(filename);
 ```

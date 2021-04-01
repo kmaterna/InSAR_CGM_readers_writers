@@ -20,8 +20,9 @@ def write_empty_file_level_config(directory):
     configobj = configparser.ConfigParser()
     configobj["general-config"] = {};
     genconfig = configobj["general-config"];
-    genconfig["hdf5_file"] = "test_cgm_insar.hdf5"
-    genconfig["tracks"] = "D071"
+    genconfig["hdf5_file"] = "test_cgm_insar_total.hdf5"
+    genconfig["hdf5_vel_file"] = "test_cgm_insar_vels.hdf5"
+    genconfig["tracks"] = "[D071]"
     genconfig["scec_cgm_version"] = "0.0.1"
     genconfig["website_link"] = "[future]"
     genconfig["documentation_link"] = "[future]"
@@ -68,6 +69,7 @@ def write_empty_track_metadata_config(directory):
     genconfig["grdsample_flags"] = ""
     genconfig["los_sign_convention"] = "positive towards satellite, negative away from satellite"
     genconfig["lkv_sign_convention"] = "vector from ground to satellite in local enu coordinates"
+    genconfig["coordinate_reference_system"] = ""
     genconfig["time_series_units"] = "mm"
     genconfig["velocity_units"] = "mm/yr"
     genconfig["start_time"] = ""
