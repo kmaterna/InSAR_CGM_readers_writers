@@ -15,7 +15,7 @@ The current HDF5 structure is envisioned as follows:
 SCEC_CGM_InSAR.hdf5
     ├── Product_Metadata
     │   └── Attributes
-    │     ├── version, data_production_date
+    │     ├── version, data_production_date, filename
     │     ├── scec_website_link, documentation_link, citation_info 
     │     └── contributing_institutions, contributing_researchers 
     └── Track_D071
@@ -52,7 +52,7 @@ SCEC_CGM_InSAR.hdf5
 
 ### NECESSARY TOOLS
 To implement the HDF5 file format, the CGM team must create:
-1. A tool to extract a certain pixel's time series from the HDF5 and convert it into a geoCSV. 
+1. ~~A tool to extract a certain pixel's time series from the HDF5 and convert it into a geoCSV.~~ 
 2. Example reader functions to read the full SCEC HDF5 file into a practical data structure, as an advanced user would do, in several commonly used programming languages (~~Python~~, Matlab, others?). **Python Done**
 3. ~~Function(s) to construct the SCEC CGM HDF5 from the CGM analysis [for internal use only].~~ **DONE**  
 4. Detailed documentation of the CGM product.
@@ -72,4 +72,14 @@ from CGM_Readers import library
 
 filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
 library.io_cgm_hdf5.read_cgm_hdf5_demo_python(filename);
+```
+
+7. You can extract pixels as GeoCSV using the library. Each pixel's time series will be saved in a GeoCSVV file. 
+ ```python
+from CGM_Readers import library
+
+reference_pixel = [-116.57164, 35.32064, "D071"];
+los_angeles = [-118.2437, 34.0522, "D071"];
+pixel_list = [reference_pixel, los_angeles];
+library.hdf5_to_geocsv.extract_csv_wrapper("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
 ```

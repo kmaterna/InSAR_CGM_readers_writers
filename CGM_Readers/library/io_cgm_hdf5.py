@@ -79,22 +79,29 @@ def read_cgm_hdf5_full_data(input_filename):
     :return: internal data structure for the data in an hdf5 file.
         - one element for each track
         - in each track: [metadata_dict, data]
-        - data = [lkv_data, velocities, time_series]
+        - data = [[lkv_data], [velocities], [time_series]]
+        - in each grid, the lon arrays increase from left to right, and lat arrays increase upward,
+          while columns increase downward. This means that the data grids will be stored with latitude increasing down,
+          and should be plotted with plt.gca().invert_yaxis().
+        - metadata_dict for each track contains the track-specific metadata and the top-level file metadata.
     """
     print("Reading file %s " % input_filename);
     cgm_data_structure = [];
     hf = h5py.File(input_filename, 'r');
     # Read each track in the hdf file
+    product_metadata = hf.get("Product_Metadata");
     all_keys = [x for x in hf.keys()];  # returns a list of the top level directories
     all_keys.remove('Product_Metadata');  # return the keys that correspond to tracks of InSAR data
     for track in all_keys:
         track_data = hf.get(track);
-        track_dict = {};
 
-        # Get metadata
+        # Get metadata for track and for file, combined into one dictionary
+        track_dict = {};
         print("Reading track %s " % track_data.attrs["track_name"]);
         for item in track_data.attrs.keys():
             track_dict[item] = track_data.attrs[item];
+        for item in product_metadata.attrs.keys():
+            track_dict[item] = product_metadata.attrs[item];
 
         # Get look vectors
         look_vector_object = [];
@@ -105,15 +112,17 @@ def read_cgm_hdf5_full_data(input_filename):
         look_vector_object.append(np.array(Grid_Info.get("lkv_N")));
         look_vector_object.append(np.array(Grid_Info.get("lkv_U")));
 
-        # Get velocities
+        # Get velocities: [2D_array_of_velocities]
         velocity_object = [];
         Velocities = track_data.get('Velocities');
         velocity_object.append(np.array(Velocities.get("velocities")));
 
-        # Get time series
+        # Get time series: [list_of_str, 3D_array_of_TS]
         time_series_object = [];
         TS = track_data.get('Time_Series');
-        time_series_object.append(np.array(TS.get('Time_Array')));
+        dates_array = np.array(TS.get('Time_Array'));
+        dates_array = [x.decode() for x in np.array(dates_array)];
+        time_series_object.append(dates_array);
         time_series_object.append(np.array(TS.get('Time_Series_Grids')));
 
         track_data_internal_struct = [look_vector_object, velocity_object, time_series_object];
@@ -143,6 +152,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
     prod_metadata.attrs['citation_info'] = str(configobj["general-config"]["citation_info"]);
     prod_metadata.attrs['contributing_institutions'] = str(configobj["general-config"]["contributing_institutions"]);
     prod_metadata.attrs['contributing_researchers'] = str(configobj["general-config"]["contributing_researchers"]);
+    prod_metadata.attrs['filename'] = str(configobj["general-config"]["hdf5_file"]);
 
     for track_datastructure in cgm_data_structure:
         item = track_datastructure[0];
