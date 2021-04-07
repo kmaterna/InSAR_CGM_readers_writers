@@ -118,7 +118,7 @@ def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, outfile)
     ofile.write("# SAR track: %s\n" % metadata_dictionary["track_name"]);
     ref_lon = float(metadata_dictionary["reference_frame"].split('/')[1]);
     ref_lat = float(metadata_dictionary["reference_frame"].split('/')[2]);
-    ofile.write("# LLH Reference Coordidnate: Lon: %f; Lat: %f; Hgt: [future]\n" % (ref_lon, ref_lat) );
+    ofile.write("# LLH Reference Coordinate: Lon: %f; Lat: %f; Hgt: [future]\n" % (ref_lon, ref_lat) );
     ofile.write("# Geometry Reference Date: %s \n" % metadata_dictionary["reference_image"] );
     ofile.write("# TS Reference Date: \n");
     ofile.write("# Displacement Sign: %s \n" % metadata_dictionary["los_sign_convention"].replace(',', ';') );

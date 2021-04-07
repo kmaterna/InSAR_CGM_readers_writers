@@ -43,10 +43,11 @@ def read_one_track_data(fileio_config_dict):
     [_, _, velocity_grid] = read_netcdf4(fileio_config_dict["velocity_ll_grd"]);
     velocity_datastructure = [velocity_grid];
 
-    # Getting time series
-    ts_grd_files = glob.glob(fileio_config_dict["ts_directory"] + '/*.grd');
+    # Getting time series. Glob pattern should match only the time series grids, not others.
+    ts_grd_files = glob.glob(fileio_config_dict["ts_directory"] + '/*[0-9]_ll.grd');
     ts_datestr_list = [];
     ts_array_list = [];
+    print("Found %s time series files" % len(ts_grd_files));
     for onefile in ts_grd_files:
         datestr = re.findall(r"\d\d\d\d\d\d\d\d", onefile)[0];
         ts_datestr_list.append(str(datestr));
