@@ -48,6 +48,7 @@ def read_one_track_data(fileio_config_dict):
     ts_datestr_list = [];
     ts_array_list = [];
     print("Found %s time series files" % len(ts_grd_files));
+    ts_grd_files = sorted(ts_grd_files);
     for onefile in ts_grd_files:
         datestr = re.findall(r"\d\d\d\d\d\d\d\d", onefile)[0];
         ts_datestr_list.append(str(datestr));
