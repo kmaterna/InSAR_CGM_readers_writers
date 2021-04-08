@@ -37,7 +37,8 @@ def read_one_track_data(fileio_config_dict):
     [lon, lat, unit_east_ll_grd] = read_netcdf4(fileio_config_dict["unit_east_ll_grd"]);
     [_, _, unit_north_ll_grd] = read_netcdf4(fileio_config_dict["unit_north_ll_grd"]);
     [_, _, unit_up_ll_grd] = read_netcdf4(fileio_config_dict["unit_up_ll_grd"]);
-    lkv_datastructure = [lon, lat, unit_east_ll_grd, unit_north_ll_grd, unit_up_ll_grd];
+    [_, _, dem_ll_grd] = read_netcdf4(fileio_config_dict["dem_ll_grd"]);
+    lkv_datastructure = [lon, lat, unit_east_ll_grd, unit_north_ll_grd, unit_up_ll_grd, dem_ll_grd];
 
     # Getting velocities
     [_, _, velocity_grid] = read_netcdf4(fileio_config_dict["velocity_ll_grd"]);
@@ -89,6 +90,7 @@ def verify_same_shapes(onetrack_datastructure):
     assert (np.shape(lkv_datastructure[2]) == expected_shape), ValueError("look_vector_east wrong size");
     assert (np.shape(lkv_datastructure[3]) == expected_shape), ValueError("look_vector_north wrong size");
     assert (np.shape(lkv_datastructure[4]) == expected_shape), ValueError("look_vector_up wrong size");
+    assert (np.shape(lkv_datastructure[5]) == expected_shape), ValueError("dem wrong size");
     assert (np.shape(velocity_datastructure[0]) == expected_shape), ValueError("velocity grid wrong size");
     for ts_array in ts_datastructure[1]:
         assert (np.shape(ts_array) == expected_shape), ValueError("ts grid wrong size");

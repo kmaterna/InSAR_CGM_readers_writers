@@ -2,7 +2,7 @@
 track_name = D071
 platform = Sentinel-1
 orbit_direction = descending
-polygon_boundaries = 0/0, 0/0, 0/0, 0/0
+polygon_boundaries = -118.685/36.432,-115.938/35.987, -116.640/32.990, -119.173/33.481
 geocoded_increment = -I0.002/0.002
 geocoded_range = -R-119.132/-115.936/32.988/36.432
 approx_posting = 200m
@@ -12,6 +12,8 @@ lkv_sign_convention = vector from ground to satellite in local enu coordinates
 coordinate_reference_system = 
 time_series_units = mm
 velocity_units = mm/yr
+dem_source = SRTM3
+dem_heights = ellipsoid
 start_time = 20150514
 end_time = 20190704
 n_times = 95

@@ -8,11 +8,13 @@ documentation_link = [future]
 citation_info = [future]
 contributing_institutions = UC San Diego, UC Berkeley, UC Riverside, US Geological Survey, NASA JPL
 contributing_researchers = Ekaterina Tymofyeyeva, David Sandwell, Xiaohua Xu, Zhen Liu, Kathryn Materna, Kang Wang, Gareth Funning, David Bekaert, Michael Floyd, Katherine Guns, Niloufar Abolfathian
+doi = [future]
 
 [D071-config]
 unit_east_ll_grd = ../source_data/Reference/SIOX_D071_east_look.grd
 unit_north_ll_grd = ../source_data/Reference/SIOX_D071_north_look.grd
 unit_up_ll_grd = ../source_data/Reference/SIOX_D071_up_look.grd
+dem_ll_grd = ../source_data/Reference/dem.grd
 velocity_ll_grd = ../source_data/Velocities/SIOX_D071_vel_ll.grd
 ts_directory = ../source_data/Time_Series/
 metadata_file = ../source_data/Reference/D071_metadata.txt

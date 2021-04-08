@@ -79,7 +79,7 @@ def read_cgm_hdf5_full_data(input_filename):
     :return: internal data structure for the data in an hdf5 file.
         - one element for each track
         - in each track: [metadata_dict, data]
-        - data = [[lkv_data], [velocities], [time_series]]
+        - data = [[lkv_obj], [velocities], [time_series]]
         - in each grid, the lon arrays increase from left to right, and lat arrays increase upward,
           while columns increase downward. This means that the data grids will be stored with latitude increasing down,
           and should be plotted with plt.gca().invert_yaxis().
@@ -100,17 +100,18 @@ def read_cgm_hdf5_full_data(input_filename):
         print("Reading track %s " % track_data.attrs["track_name"]);
         for item in track_data.attrs.keys():
             track_dict[item] = track_data.attrs[item];
-        for item in product_metadata.attrs.keys():
+        for item in product_metadata.attrs.keys():   # duplicate file metadata into track_metadata_dict for convenience
             track_dict[item] = product_metadata.attrs[item];
 
-        # Get look vectors
-        look_vector_object = [];
+        # Get look vectors, DEM, and grid arrays
+        grid_object = [];
         Grid_Info = track_data.get('Grid_Info');
-        look_vector_object.append(np.array(Grid_Info.get("lon")));
-        look_vector_object.append(np.array(Grid_Info.get("lat")));
-        look_vector_object.append(np.array(Grid_Info.get("lkv_E")));
-        look_vector_object.append(np.array(Grid_Info.get("lkv_N")));
-        look_vector_object.append(np.array(Grid_Info.get("lkv_U")));
+        grid_object.append(np.array(Grid_Info.get("lon")));
+        grid_object.append(np.array(Grid_Info.get("lat")));
+        grid_object.append(np.array(Grid_Info.get("lkv_E")));
+        grid_object.append(np.array(Grid_Info.get("lkv_N")));
+        grid_object.append(np.array(Grid_Info.get("lkv_U")));
+        grid_object.append(np.array(Grid_Info.get("dem")));
 
         # Get velocities: [2D_array_of_velocities]
         velocity_object = [];
@@ -125,7 +126,7 @@ def read_cgm_hdf5_full_data(input_filename):
         time_series_object.append(dates_array);
         time_series_object.append(np.array(TS.get('Time_Series_Grids')));
 
-        track_data_internal_struct = [look_vector_object, velocity_object, time_series_object];
+        track_data_internal_struct = [grid_object, velocity_object, time_series_object];
         track_data_package = [track_dict, track_data_internal_struct];
         cgm_data_structure.append(track_data_package);
     return cgm_data_structure;
@@ -153,6 +154,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
     prod_metadata.attrs['contributing_institutions'] = str(configobj["general-config"]["contributing_institutions"]);
     prod_metadata.attrs['contributing_researchers'] = str(configobj["general-config"]["contributing_researchers"]);
     prod_metadata.attrs['filename'] = str(configobj["general-config"]["hdf5_file"]);
+    prod_metadata.attrs['doi'] = str(configobj["general-config"]["doi"]);
 
     for track_datastructure in cgm_data_structure:
         item = track_datastructure[0];
@@ -171,6 +173,8 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
         track_data.attrs["coordinate_reference_system"] = item["track-config"]["coordinate_reference_system"];
         track_data.attrs["time_series_units"] = item["track-config"]["time_series_units"];
         track_data.attrs["velocity_units"] = item["track-config"]["velocity_units"];
+        track_data.attrs["dem_source"] = item["track-config"]["dem_source"];
+        track_data.attrs["dem_heights"] = item["track-config"]["dem_heights"];
         track_data.attrs["time_start"] = item["track-config"]["start_time"];
         track_data.attrs["time_end"] = item["track-config"]["end_time"];
         track_data.attrs["time_steps_number"] = item["track-config"]["n_times"];
@@ -186,6 +190,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
         grid_group.create_dataset('lkv_E', data=lkv_datastruct[2]);
         grid_group.create_dataset('lkv_N', data=lkv_datastruct[3]);
         grid_group.create_dataset('lkv_U', data=lkv_datastruct[4]);
+        grid_group.create_dataset('dem', data=lkv_datastruct[5]);
 
         # Package velocity information
         if write_velocities:

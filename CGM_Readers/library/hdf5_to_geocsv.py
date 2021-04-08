@@ -28,9 +28,9 @@ def extract_csv_wrapper(hdf_file, pixel_list, output_dir):
         track_metadata = track_data_structure[0];
         track_total_data = track_data_structure[1];
 
-        lkv_data = track_total_data[0];  # unpack lkv_data
-        lon_array = lkv_data[0];     # unpack lkv_data
-        lat_array = lkv_data[1];
+        grid_data = track_total_data[0];  # unpack lkv_data
+        lon_array = grid_data[0];     # unpack lkv_data
+        lat_array = grid_data[1];
         ts_data = track_total_data[2];   # unpack time series information
 
         # Find the nearest row and column in the array
@@ -38,11 +38,12 @@ def extract_csv_wrapper(hdf_file, pixel_list, output_dir):
 
         # Extract pixel time series data
         pixel_time_series = extract_pixel_ts(ts_data, rownum, colnum);
-        pixel_lkv = extract_pixel_lkv(lkv_data, rownum, colnum);
+        pixel_lkv = extract_pixel_lkv(grid_data, rownum, colnum);
+        pixel_hgt = extract_pixel_height(grid_data, rownum, colnum);
 
         # Write the GeoCSV format
         outfile = output_dir+"/pixel_"+str(pixel[0])+"_"+str(pixel[1])+"_"+str(pixel[2])+".csv";
-        write_geocsv2p0(pixel, track_metadata, pixel_time_series, pixel_lkv, outfile);
+        write_geocsv2p0(pixel, track_metadata, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
     return;
 
 
@@ -86,7 +87,7 @@ def extract_pixel_ts(ts_data, rownum, colnum):
 def extract_pixel_lkv(lkv_data, rownum, colnum):
     """
     Extract the look vector components for a particular pixel
-    :param lkv_data: data structure [lonarray, latarray, lkve_array, lkvn_array, lkvu_array]
+    :param lkv_data: data structure [lonarray, latarray, lkve_array, lkvn_array, lkvu_array, dem_array]
     :param rownum: int
     :param colnum: int
     :return: [lkv_e, lkv_n, lkv_u]
@@ -97,7 +98,19 @@ def extract_pixel_lkv(lkv_data, rownum, colnum):
     return [lkve_array[rownum][colnum], lkvn_array[rownum][colnum], lkvu_array[rownum][colnum]];
 
 
-def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, outfile):
+def extract_pixel_height(grid_data, rownum, colnum):
+    """
+    Extract the dem height for a particular pixel
+    :param grid_data: data structure [lonarray, latarray, lkve_array, lkvn_array, lkvu_array, dem_array]
+    :param rownum: int
+    :param colnum: int
+    :return: pixel_hgt
+    """
+    dem = grid_data[5]
+    return dem[rownum][colnum];
+
+
+def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hgt, outfile):
     """
     :param pixel: structure with [lon, lat, track]
     :param metadata_dictionary: a dictionary with many attributes
@@ -123,8 +136,10 @@ def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, outfile)
     ofile.write("# TS Reference Date: \n");
     ofile.write("# Displacement Sign: %s \n" % metadata_dictionary["los_sign_convention"].replace(',', ';') );
     ofile.write("# Line-Of-Sight vector: X: %f; Y: %f; Z: %f\n" % (lkv[0], lkv[1], lkv[2]));
-    ofile.write("# LLH Pixel: Lon: %f; Lat: %f; Hgt: [future]\n" % (pixel[0], pixel[1]));
+    ofile.write("# LLH Pixel: Lon: %f; Lat: %f; Hgt: %f\n" % (pixel[0], pixel[1], pixel_hgt));
+    ofile.write("# Pixel Height: %s \n" % metadata_dictionary["dem_heights"] );
     ofile.write("# Version: %s \n" % metadata_dictionary["version"]);
+    ofile.write("# DOI: %s \n" % metadata_dictionary["doi"]);
     ofile.write("Datetime, LOS, Std Dev LOS\n");
     for i in range(len(pixel_time_series[0])):
         dt_string = dt.datetime.strftime(pixel_time_series[0][i], "%Y-%m-%dT00:00:00Z");

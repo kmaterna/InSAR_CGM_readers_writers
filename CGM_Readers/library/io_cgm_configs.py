@@ -31,11 +31,14 @@ def write_empty_file_level_config(directory):
     genconfig["contributing_researchers"] = "Ekaterina Tymofyeyeva, David Sandwell, Xiaohua Xu, Zhen Liu, Kathryn " \
                                             "Materna, Kang Wang, Gareth Funning, David Bekaert, Michael Floyd, " \
                                             "Katherine Guns, Niloufar Abolfathian "
+    genconfig["doi"] = "[future]"
+
     configobj["D071-config"] = {};
     trackconfig = configobj["D071-config"];
     trackconfig["unit_east_ll_grd"] = ""
     trackconfig["unit_north_ll_grd"] = ""
     trackconfig["unit_up_ll_grd"] = ""
+    trackconfig["dem_ll_grd"] = ""
     trackconfig["velocity_ll_grd"] = ""
     trackconfig["ts_directory"] = ""
     trackconfig["metadata_file"] = ""
@@ -72,6 +75,8 @@ def write_empty_track_metadata_config(directory):
     genconfig["coordinate_reference_system"] = ""
     genconfig["time_series_units"] = "mm"
     genconfig["velocity_units"] = "mm/yr"
+    genconfig["dem_source"] = "SRTM3"
+    genconfig["dem_heights"] = "ellipsoid"
     genconfig["start_time"] = ""
     genconfig["end_time"] = ""
     genconfig["n_times"] = ""
