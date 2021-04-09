@@ -135,7 +135,7 @@ def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hg
     ofile.write("# Geometry Reference Date: %s \n" % metadata_dictionary["reference_image"] );
     ofile.write("# TS Reference Date: \n");
     ofile.write("# Displacement Sign: %s \n" % metadata_dictionary["los_sign_convention"].replace(',', ';') );
-    ofile.write("# Line-Of-Sight vector: X: %f; Y: %f; Z: %f\n" % (lkv[0], lkv[1], lkv[2]));
+    ofile.write("# Line-Of-Sight vector: E: %f; N: %f; U: %f\n" % (lkv[0], lkv[1], lkv[2]));
     ofile.write("# LLH Pixel: Lon: %f; Lat: %f; Hgt: %f\n" % (pixel[0], pixel[1], pixel_hgt));
     ofile.write("# Pixel Height: %s \n" % metadata_dictionary["dem_heights"] );
     ofile.write("# Version: %s \n" % metadata_dictionary["version"]);
