@@ -56,15 +56,10 @@ def read_cgm_hdf5_demo_python(input_filename):
 
         # Reading time series information
         print('---------- Track %s Time Series Data ----------' % track_name);
-        TS = track_data.get('Time_Series');
+        TS = track_data.get('Time Series');
+        print(TS)
         for item in TS.keys():
             print(item + ":", np.shape(np.array(TS.get(item))));
-
-        # Explicitly print the time steps used in this time series file.
-        print("Time steps: ")
-        ds = TS.get('Time_Array');
-        print([x.decode() for x in np.array(ds)]);
-        print("\n");
 
     hf.close();
     return None;
@@ -201,9 +196,10 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
         # Package time series information
         if write_time_series:
             ts_datastructure = data[2];
-            ts_group = track_data.create_group('Time_Series');
-            ts_group.create_dataset('Time_Array', data=ts_datastructure[0]);
-            ts_group.create_dataset('Time_Series_Grids', data=ts_datastructure[1]);
+            datelist = ts_datastructure[0]
+            ts_group = track_data.create_group('Time Series');
+            for i in range(len(datelist)):
+                ts_group.create_dataset(datelist[i], data=ts_datastructure[1][i]);
 
     hf.close();
     return;
