@@ -56,7 +56,7 @@ def read_cgm_hdf5_demo_python(input_filename):
 
         # Reading time series information
         print('---------- Track %s Time Series Data ----------' % track_name);
-        TS = track_data.get('Time Series');
+        TS = track_data.get('Time_Series');
         print(TS)
         for item in TS.keys():
             print(item + ":", np.shape(np.array(TS.get(item))));
@@ -114,12 +114,13 @@ def read_cgm_hdf5_full_data(input_filename):
         velocity_object.append(np.array(Velocities.get("velocities")));
 
         # Get time series: [list_of_str, 3D_array_of_TS]
-        time_series_object = [];
+        dates_array, ts_data_slices = [], [];
         TS = track_data.get('Time_Series');
-        dates_array = np.array(TS.get('Time_Array'));
-        dates_array = [x.decode() for x in np.array(dates_array)];
-        time_series_object.append(dates_array);
-        time_series_object.append(np.array(TS.get('Time_Series_Grids')));
+        for item in TS.keys():
+            ts_data_slice = np.array(TS.get(item));
+            dates_array.append(str(item));
+            ts_data_slices.append(ts_data_slice);
+        time_series_object = [dates_array, ts_data_slices];
 
         track_data_internal_struct = [grid_object, velocity_object, time_series_object];
         track_data_package = [track_dict, track_data_internal_struct];
@@ -197,9 +198,9 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
         if write_time_series:
             ts_datastructure = data[2];
             datelist = ts_datastructure[0]
-            ts_group = track_data.create_group('Time Series');
-            for i in range(len(datelist)):
-                ts_group.create_dataset(datelist[i], data=ts_datastructure[1][i]);
+            ts_group = track_data.create_group('Time_Series');
+            for i, d in enumerate(datelist):
+                ts_group.create_dataset(d, data=ts_datastructure[1][i]);
 
     hf.close();
     return;
