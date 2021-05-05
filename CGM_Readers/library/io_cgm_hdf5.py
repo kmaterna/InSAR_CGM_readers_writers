@@ -155,6 +155,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
     for track_datastructure in cgm_data_structure:
         item = track_datastructure[0];
         data = track_datastructure[1];   # unpacking the datastructure created previously
+        print("Packaging track %s " % item["track-config"]["track_name"]);
         track_data = hf.create_group('Track_'+item["track-config"]["track_name"]);
         track_data.attrs["track_name"] = item["track-config"]["track_name"];
         track_data.attrs["platform"] = item["track-config"]["platform"];
@@ -200,6 +201,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
             datelist = ts_datastructure[0]
             ts_group = track_data.create_group('Time_Series');
             for i, d in enumerate(datelist):
+                print("  time series: ", d);
                 ts_group.create_dataset(d, data=ts_datastructure[1][i]);
 
     hf.close();
