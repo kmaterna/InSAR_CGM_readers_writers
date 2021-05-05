@@ -38,8 +38,6 @@ SCEC_CGM_InSAR.hdf5
         │   ├── lkv_up_ll_grd
         │   └── dem_ll_grd   
         ├── Time_Series
-        │   ├── Time_Array
-        │   │   └── dates
         │   ├── Time_Series_Grids
         │   │   ├── 20150327_ll_grd
         │   │   ├── 20150421_ll_grd
