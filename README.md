@@ -64,11 +64,11 @@ To implement the HDF5 file format, the CGM team must create:
 ### SCEC CGM USAGE
 Directions to package up CGM InSAR HDF5 file from local files: 
 
-1. Clone CGM_Readers repo onto your local machine in a directory that is on your PYTHONPATH. Install requirements from package manager if necessary.
-2. Get into fresh directory where you want to do the HDF5 packaging.  
-3. From working directory, call ```$PATH_TO_BIN/generage_empty_configs.py .``` in a terminal.  This will generate two empty files into the working directory, "file_level_config.txt" and "TRAC_metadata.txt"
+1. Clone CGM_Readers repo onto your local machine.  Install requirements if necessary.  Install software by calling ```python setup.py install```    
+2. Get into directory where you want to do the HDF5 packaging.  
+3. From working directory, call ```cgm_generage_empty_configs.py .``` in a terminal.  This will generate two empty files into the working directory, "file_level_config.txt" and "TRAC_metadata.txt"
 4. Manually fill in all the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. Information regarding highest-level product metadata or file I/O options specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Just make sure it can be properly found in the file_level_config.
-5. From the working directory, call ```$PATH_TO_BIN/write_cgm_hdf5.py file_level_config.txt```
+5. From the working directory, call ```cgm_write_hdf5.py file_level_config.txt```
 6. Check out your brand new HDF5 file.  I check the file out on my own computer this way: 
 ```python
 #!/usr/bin/env python
