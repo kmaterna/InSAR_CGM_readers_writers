@@ -72,10 +72,10 @@ Directions to package up CGM InSAR HDF5 file from local files:
 6. Check out your brand new HDF5 file.  I check the file out on my own computer this way: 
 ```python
 #!/usr/bin/env python
-from CGM_Readers import library
+import cgm_library
 
 filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
-library.io_cgm_hdf5.read_cgm_hdf5_demo_python(filename);
+cgm_library.io_cgm_hdf5.read_cgm_hdf5_demo_python(filename);
 ```
 Alternately, you can look at the basic metadata in gdal:
 ```
@@ -87,10 +87,10 @@ gdalinfo test_SCEC_CGM_InSAR_v0_0_1.hdf5
 7. You can extract pixels as GeoCSV using the library. Each pixel's time series will be saved in a GeoCSV file. 
  ```python
 #!/usr/bin/env python
-from CGM_Readers import library
+import cgm_library
 
 reference_pixel = [-116.57164, 35.32064, "D071"];
 los_angeles = [-118.2437, 34.0522, "D071"];
 pixel_list = [reference_pixel, los_angeles];
-library.hdf5_to_geocsv.extract_csv_wrapper("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
+cgm_library.hdf5_to_geocsv.extract_csv_wrapper("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
 ```

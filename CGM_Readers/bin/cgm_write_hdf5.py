@@ -6,7 +6,7 @@ Will be called when the product is ready to be packaged and distributed.
 
 
 import argparse
-from CGM_Readers import library
+import cgm_library
 
 
 def welcome_and_parse_runstring():
@@ -21,4 +21,4 @@ def welcome_and_parse_runstring():
 
 if __name__ == "__main__":
     args = welcome_and_parse_runstring();
-    library.cgm_packaging_functions.drive_scec_hdf5_packaging(args.config);
+    cgm_library.cgm_packaging_functions.drive_scec_hdf5_packaging(args.config);

@@ -3,6 +3,6 @@ sample_directory_tree/*
 __pycache__/*
 CGM_Readers/__pycache__/*
 CGM_Readers/*egg-info*
-CGM_Readers/library/__pycache__/*
+CGM_Readers/cgm_library/__pycache__/*
 dist/*
 build/*

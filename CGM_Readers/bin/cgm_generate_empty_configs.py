@@ -6,7 +6,7 @@ Call this from a new directory to get valid config file templates
 """
 
 import argparse
-from CGM_Readers import library
+import cgm_library
 
 
 def welcome_and_parse_runstring():
@@ -21,5 +21,5 @@ def welcome_and_parse_runstring():
 
 if __name__ == "__main__":
     args = welcome_and_parse_runstring();
-    library.io_cgm_configs.write_empty_file_level_config(args.directory);
-    library.io_cgm_configs.write_empty_track_metadata_config(args.directory);
+    cgm_library.io_cgm_configs.write_empty_file_level_config(args.directory);
+    cgm_library.io_cgm_configs.write_empty_track_metadata_config(args.directory);
