@@ -143,7 +143,10 @@ def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hg
     ofile.write("# DOI: %s \n" % metadata_dictionary["doi"]);
     ofile.write("Datetime, LOS, Std Dev LOS\n");
     for i in range(len(pixel_time_series[0])):
-        dt_string = dt.datetime.strftime(pixel_time_series[0][i], "%Y-%m-%dT%H:%M:%SZ");
+        if len(pixel_time_series[0][i]) > 8:
+            dt_string = dt.datetime.strftime(pixel_time_series[0][i], "%Y-%m-%dT%H:%M:%SZ");
+        else:
+            dt_string = dt.datetime.strftime(pixel_time_series[0][i], "%Y-%m-%d");
         ofile.write("%s, %f, %f\n" % (dt_string, pixel_time_series[1][i], pixel_time_series[2][i]) );
     ofile.close();
     return;

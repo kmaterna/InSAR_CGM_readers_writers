@@ -38,10 +38,10 @@ SCEC_CGM_InSAR.hdf5
         │   ├── lkv_up_ll_grd
         │   └── dem_ll_grd   
         ├── Time_Series
-        │   ├── Time_Series_Grids
-        │   │   ├── 20150327_ll_grd
-        │   │   ├── 20150421_ll_grd
-        │   │   └── 20150515_ll_grd
+        │   ├── Time_Series_Grids (format: yyyymmddTHHMMSS, UTC time)
+        │   │   ├── 20150327T135156_ll_grd
+        │   │   ├── 20150421T135158_ll_grd
+        │   │   └── 20150515T135159_ll_grd
         │   │   └── ....
         │   └── Uncertainties
         │       └── (undecided)
