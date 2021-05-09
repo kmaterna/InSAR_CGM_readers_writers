@@ -46,13 +46,24 @@ def read_one_track_data(fileio_config_dict):
 
     # Getting time series. Glob pattern should match only the time series grids, not others.
     ts_grd_files = glob.glob(fileio_config_dict["ts_directory"] + '/*[0-9]_ll.grd');
+    if fileio_config_dict["safes_list"]:
+        full_safe_list = np.loadtxt(fileio_config_dict["safes_list"], unpack=True,
+                                    dtype={'names': ('u10',), 'formats': ('U50',)});
+        safe_times = [x[0][17:32] for x in full_safe_list];
+    else:
+        safe_times = [];   # providing the full list of safes is optional. It will still work without it.
     ts_datestr_list = [];
     ts_array_list = [];
     print("Found %s time series files" % len(ts_grd_files));
     ts_grd_files = sorted(ts_grd_files);
     for onefile in ts_grd_files:
-        datestr = re.findall(r"\d\d\d\d\d\d\d\d", onefile)[0];
-        ts_datestr_list.append(str(datestr));
+        datestr_fine = [];
+        datestr_coarse = re.findall(r"\d\d\d\d\d\d\d\d", onefile)[0];
+        for safe_time in safe_times:
+            if datestr_coarse in safe_time:
+                datestr_fine = safe_time
+        datestr_saving = datestr_fine if datestr_fine else datestr_coarse;
+        ts_datestr_list.append(str(datestr_saving));
         [_, _, ts_array] = read_netcdf4(onefile);
         ts_array_list.append(ts_array);
     ts_datastructure = [ts_datestr_list, ts_array_list];

@@ -39,6 +39,7 @@ def write_empty_file_level_config(directory):
     trackconfig["unit_north_ll_grd"] = ""
     trackconfig["unit_up_ll_grd"] = ""
     trackconfig["dem_ll_grd"] = ""
+    trackconfig["safes_list"] = ""
     trackconfig["velocity_ll_grd"] = ""
     trackconfig["ts_directory"] = ""
     trackconfig["metadata_file"] = ""

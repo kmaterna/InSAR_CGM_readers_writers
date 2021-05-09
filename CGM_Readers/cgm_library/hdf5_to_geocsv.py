@@ -70,7 +70,7 @@ def extract_pixel_ts(ts_data, rownum, colnum):
     :return: array of dates, array of numbers
     """
     dates_array = ts_data[0];
-    dates_array = [dt.datetime.strptime(x, "%Y%m%d") for x in dates_array];
+    dates_array = [dt.datetime.strptime(x, "%Y%m%dT%H%M%S") for x in dates_array];
     full_grids = ts_data[1];
     single_time_series = [];
     single_unc_series = [];
@@ -116,6 +116,7 @@ def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hg
     :param metadata_dictionary: a dictionary with many attributes
     :param pixel_time_series: [list_of_dts, list_of_displacements, list_of_uncs]
     :param lkv: [lkv_e, lkv_n, lkv_u]
+    :param pixel_hgt: height of target point on DEM
     :param outfile: name of file where csv will be stored
     :return: nothing
     """
@@ -142,7 +143,7 @@ def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hg
     ofile.write("# DOI: %s \n" % metadata_dictionary["doi"]);
     ofile.write("Datetime, LOS, Std Dev LOS\n");
     for i in range(len(pixel_time_series[0])):
-        dt_string = dt.datetime.strftime(pixel_time_series[0][i], "%Y-%m-%dT00:00:00Z");
+        dt_string = dt.datetime.strftime(pixel_time_series[0][i], "%Y-%m-%dT%H:%M:%SZ");
         ofile.write("%s, %f, %f\n" % (dt_string, pixel_time_series[1][i], pixel_time_series[2][i]) );
     ofile.close();
     return;
