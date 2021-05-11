@@ -62,7 +62,7 @@ Directions to package up CGM InSAR HDF5 file from local files:
 
 
 ## USER'S CORNER FOR SCEC HDF5 FILE
-1. Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements if necessary (can set up dedicated conda environment if desired).  Install software by calling ```python setup.py install```
+1. If you plan to read HDF5 into Python: Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements if necessary (if desired, you can set up dedicated conda environment in requirements.txt).  Install software by calling ```python setup.py install```
 2. Check out an HDF5 file.  One option is to view the basic metadata and its contents in bash:  
 ```bash
 #!/bin/bash 
@@ -121,7 +121,7 @@ gmt grdimage $outfile -R$range -J$Proj -B1 -Cmycpt.cpt -K -P > out_vel.ps #
 ```
 Results for extracting the GMT grd file of velocities in Track D071 are shown below: 
 
-![velocities](https://github.com/kmaterna/InSAR_CGM_readers_writers/blob/master/example_configs/track_071_vels.png)
+![Velocities](/example_configs/track_071_vels.png)
 
 
 ## SOFTWARE TO-DOS FOR SCEC TEAM
