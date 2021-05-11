@@ -115,9 +115,8 @@ gmt grdedit $outfile -T    # turn the file to pixel node registration. Must be d
 
 # GMT PLOTTING. 
 Range="-121/-115/32/37"
-Proj="M5i"
 gmt makecpt -T-32/7/1 -Croma > mycpt.cpt
-gmt grdimage $outfile -R$range -J$Proj -B1 -Cmycpt.cpt -K -P > out_vel.ps # 
+gmt grdimage $outfile -R$range -JM5i -B1 -Cmycpt.cpt -K -P > out_vel.ps # 
 ```
 Results for extracting the GMT grd file of velocities in Track D071 are shown below: 
 
@@ -129,7 +128,9 @@ To implement the HDF5 file format, the CGM team must create:
 1. ~~Function(s) to construct the SCEC CGM HDF5 from the CGM analysis [for internal use only].~~ **DONE**
 2. Example reader functions to read the full SCEC HDF5 file into a practical data structure, as an advanced user would do, in several commonly used programming languages:
     * ~~Python~~
+    * ~~bash/gmt~~
     * Matlab
     * Jupyter Notebook
 3. ~~A tool to extract a certain pixel's time series from the HDF5 and convert it into a geoCSV.~~  
 4. Detailed documentation of the CGM product.
+5. Next steps: Make binary executable to take only one track out of multi-track file
