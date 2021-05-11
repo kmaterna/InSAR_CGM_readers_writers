@@ -103,21 +103,21 @@ def read_cgm_hdf5_full_data(input_filename):
         Grid_Info = track_data.get('Grid_Info');
         grid_object.append(np.array(Grid_Info.get("lon")));
         grid_object.append(np.array(Grid_Info.get("lat")));
-        grid_object.append(np.array(Grid_Info.get("lkv_E")));
-        grid_object.append(np.array(Grid_Info.get("lkv_N")));
-        grid_object.append(np.array(Grid_Info.get("lkv_U")));
-        grid_object.append(np.array(Grid_Info.get("dem")));
+        grid_object.append(np.flipud(np.array(Grid_Info.get("lkv_E"))));
+        grid_object.append(np.flipud(np.array(Grid_Info.get("lkv_N"))));
+        grid_object.append(np.flipud(np.array(Grid_Info.get("lkv_U"))));
+        grid_object.append(np.flipud(np.array(Grid_Info.get("dem"))));
 
         # Get velocities: [2D_array_of_velocities]
         velocity_object = [];
         Velocities = track_data.get('Velocities');
-        velocity_object.append(np.array(Velocities.get("velocities")));
+        velocity_object.append(np.flipud(np.array(Velocities.get("velocities"))));
 
         # Get time series: [list_of_str, 3D_array_of_TS]
         dates_array, ts_data_slices = [], [];
         TS = track_data.get('Time_Series');
         for item in TS.keys():
-            ts_data_slice = np.array(TS.get(item));
+            ts_data_slice = np.flipud(np.array(TS.get(item)));
             dates_array.append(str(item));
             ts_data_slices.append(ts_data_slice);
         time_series_object = [dates_array, ts_data_slices];
@@ -151,6 +151,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
     prod_metadata.attrs['contributing_researchers'] = str(configobj["general-config"]["contributing_researchers"]);
     prod_metadata.attrs['filename'] = str(configobj["general-config"]["hdf5_file"]);
     prod_metadata.attrs['doi'] = str(configobj["general-config"]["doi"]);
+    prod_metadata.attrs['node_offset'] = 1;    # for pixel-node registration (in theory, not practice)
 
     for track_datastructure in cgm_data_structure:
         item = track_datastructure[0];
@@ -182,18 +183,41 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
         # data now has onetrack_datastructure = [lkv_datastructure, velocity_datastructure, ts_datastructure]
         lkv_datastruct = data[0];
         grid_group = track_data.create_group('Grid_Info')
-        grid_group.create_dataset('lon', data=lkv_datastruct[0]);
-        grid_group.create_dataset('lat', data=lkv_datastruct[1]);
-        grid_group.create_dataset('lkv_E', data=lkv_datastruct[2]);
-        grid_group.create_dataset('lkv_N', data=lkv_datastruct[3]);
-        grid_group.create_dataset('lkv_U', data=lkv_datastruct[4]);
-        grid_group.create_dataset('dem', data=lkv_datastruct[5]);
+        lon_ds = grid_group.create_dataset('lon', data=lkv_datastruct[0]);
+        lon_ds.make_scale(name='longitude');
+        lat_ds = grid_group.create_dataset('lat', data=lkv_datastruct[1]);
+        lat_ds.make_scale(name='latitude');
+        # Requiring the gmt_range for each track because of extracting the grid in GMT later.
+        gmt_range = str(np.round(np.min(lkv_datastruct[0]), 4))+'/'+str(np.round(np.max(lkv_datastruct[0]), 4))+'/'+\
+                    str(np.round(np.min(lkv_datastruct[1]), 4))+'/'+str(np.round(np.max(lkv_datastruct[1]), 4));
+        grid_group.attrs["gmt_range"] = gmt_range;
+        tmp_e = grid_group.create_dataset('lkv_E', data=np.flipud(lkv_datastruct[2]));
+        tmp_e.attrs["node_offset"] = 1;
+        tmp_e.dims[1].attach_scale(lon_ds);
+        tmp_e.dims[0].attach_scale(lat_ds);
+        tmp_n = grid_group.create_dataset('lkv_N', data=np.flipud(lkv_datastruct[3]));
+        tmp_n.attrs["node_offset"] = 1;
+        tmp_n.dims[1].attach_scale(lon_ds);
+        tmp_n.dims[0].attach_scale(lat_ds);
+        tmp_u = grid_group.create_dataset('lkv_U', data=np.flipud(lkv_datastruct[4]));
+        tmp_u.attrs["node_offset"] = 1;
+        tmp_u.dims[1].attach_scale(lon_ds);
+        tmp_u.dims[0].attach_scale(lat_ds);
+        tmp_dem = grid_group.create_dataset('dem', data=np.flipud(lkv_datastruct[5]));
+        tmp_dem.attrs["node_offset"] = 1;
+        tmp_dem.dims[1].attach_scale(lon_ds);
+        tmp_dem.dims[0].attach_scale(lat_ds);
 
         # Package velocity information
         if write_velocities:
             vel_datastruct = data[1];
             vel_group = track_data.create_group('Velocities')
-            vel_group.create_dataset('velocities', data=vel_datastruct[0]);
+            tmp = vel_group.create_dataset('velocities', data=np.flipud(vel_datastruct[0]));
+            tmp.attrs["node_offset"] = 1;
+            tmp.dims[1].attach_scale(lon_ds);
+            tmp.dims[0].attach_scale(lat_ds);
+            tmp.dims[0].label = 'latitude'
+            tmp.dims[1].label = 'longitude'
 
         # Package time series information
         if write_time_series:
@@ -202,7 +226,10 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
             ts_group = track_data.create_group('Time_Series');
             for i, d in enumerate(datelist):
                 print("  time series: ", d);
-                ts_group.create_dataset(d, data=ts_datastructure[1][i]);
+                tmp = ts_group.create_dataset(d, data=np.flipud(ts_datastructure[1][i]));
+                tmp.attrs["node_offset"] = 1;
+                tmp.dims[1].attach_scale(lon_ds);
+                tmp.dims[0].attach_scale(lat_ds);
 
     hf.close();
     return;
