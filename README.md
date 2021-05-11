@@ -71,7 +71,7 @@ h5dump --header test_SCEC_CGM_InSAR_v0_0_1.hdf5      # detailed metadata table
 h5dump --a /Product_Metadata/version test_SCEC_CGM_InSAR_v0_0_1.hdf5  # view value of attribute
 ```
 Alternately, you can look at the basic metadata in gdal:
-```
+```bash
 #!/bin/bash
 gdalinfo test_SCEC_CGM_InSAR_v0_0_1.hdf5
 ```
@@ -97,20 +97,21 @@ cgm_library.hdf5_to_geocsv.extract_csv_wrapper("test_SCEC_CGM_InSAR_v0_0_1.hdf5"
 
 You can also extract a layer of data for a particular track into a GMT grid file. 
 A GMT installation with GDAL is required. 
+(for more: https://docs.generic-mapping-tools.org/latest/cookbook/features.html?highlight=ndvi#reading-more-complex-multi-band-images-or-grids)
 ```bash 
 #!/bin/bash
 
 # FILE CONFIGURATION
 infile="test_SCEC_CGM_InSAR_v0_0_1.hdf5"
 track="Track_D071"
-layer="Velocities/velocities"   # reference the metadata table or ToC for exact locations 
+dataset="Velocities/velocities"   # reference the file's metadata table (h5dump -n) for exact dataset architecture
 outfile="D071_vels.grd"
 
 # EXTACT A SINGLE GRD FILE FROM HDF5 FILE!!!!  
 # All three lines are necessary for a complete data extraction.  
-gmt_range=`h5dump -a //$track/Grid_Info/gmt_range $infile | grep -o "[0-9.-]*/[0-9.-]*/[0-9.-]*/[0-9.-]*"`   # see what's inside gmt_range attribute
-gmt grdedit $infile=gd?HDF5:"$infile"://$track/$layer -R$gmt_range -G$outfile   # send layer out to grdfile, using GDAL. 
-gmt grdedit $outfile -T    # turn the file to pixel node registration. Must be done in second step. 
+gmt_range=`h5dump -a //$track/Grid_Info/gmt_range $infile | grep -o "[0-9.-]*/[0-9.-]*/[0-9.-]*/[0-9.-]*"`   # value of gmt_range attribute. 
+gmt grdedit $infile=gd?HDF5:"$infile"://$track/$dataset -R$gmt_range -G$outfile   # send layer out to grdfile, using GDAL. 
+gmt grdedit $outfile -T    # turn the file to pixel node registration. Must be done in second step.  
 
 # GMT PLOTTING. 
 Range="-121/-115/32/37"
@@ -120,7 +121,7 @@ gmt grdimage $outfile -R$range -J$Proj -B1 -Cmycpt.cpt -K -P > out_vel.ps #
 ```
 Results for velocities of Track D071 are shown below: 
 
-![velocities](https://github.com/kmaterna/InSAR_CGM_readers_writers/blob/master/example_configs/track_71_vels.png)
+![velocities](https://github.com/kmaterna/InSAR_CGM_readers_writers/blob/master/example_configs/track_071_vels.png)
 
 
 #### SOFTWARE TO-DOS FOR SCEC TEAM
