@@ -1,6 +1,6 @@
 ## Readers and Writers for the SCEC Commuinity Geodetic Model InSAR Products
 
-### OVERVIEW
+## OVERVIEW
 We aim to present the SCEC CGM InSAR Product as a single HDF5 file that can be parsed and presented by the SCEC CGM website. 
 
 **For standard users:** we want the CGM website to run a script that extracts a velocity or time series at one or more lon/lat pairs and returns a time series in geoCSV for the user.   
@@ -8,7 +8,7 @@ We aim to present the SCEC CGM InSAR Product as a single HDF5 file that can be p
 **For advanced users:** we want the user to download the full SCEC CGM HDF5 file and parse their own useful features with some guidance and reading tools from SCEC. 
 
 
-### CGM InSAR HDF5 STRUCTURE 
+## CGM InSAR HDF5 STRUCTURE 
 
 The current HDF5 structure is envisioned as follows: 
 ```bash
@@ -50,7 +50,7 @@ SCEC_CGM_InSAR.hdf5
             └── velocities_grd
 ```
 
-### SCEC CGM USAGE
+## PACKAGING INSTRUCTIONS (for SCEC CGM Team)
 Directions to package up CGM InSAR HDF5 file from local files: 
 
 1. Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements if necessary (can set up dedicated conda environment if desired).  Install software by calling ```python setup.py install```    
@@ -61,9 +61,9 @@ Directions to package up CGM InSAR HDF5 file from local files:
 
 
 
-### USER'S CORNER FOR SCEC HDF5 FILE
+## USER'S CORNER FOR SCEC HDF5 FILE
 1. Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements if necessary (can set up dedicated conda environment if desired).  Install software by calling ```python setup.py install```
-2. Check out your brand new HDF5 file.  One option is to view the basic metadata and its contents in bash:  
+2. Check out an HDF5 file.  One option is to view the basic metadata and its contents in bash:  
 ```bash
 #!/bin/bash 
 h5dump --contents test_SCEC_CGM_InSAR_v0_0_1.hdf5    # basic table of contents 
@@ -83,7 +83,7 @@ import cgm_library
 filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
 cgm_library.io_cgm_hdf5.read_cgm_hdf5_demo_python(filename);
 ```
-##### Extracting Data
+### Extracting Layers
 You can extract pixels as GeoCSV using this library. Each pixel's time series will be saved in a GeoCSV file. 
  ```python
 #!/usr/bin/env python
@@ -119,12 +119,12 @@ Proj="M5i"
 gmt makecpt -T-32/7/1 -Croma > mycpt.cpt
 gmt grdimage $outfile -R$range -J$Proj -B1 -Cmycpt.cpt -K -P > out_vel.ps # 
 ```
-Results for velocities of Track D071 are shown below: 
+Results for extracting the GMT grd file of velocities in Track D071 are shown below: 
 
 ![velocities](https://github.com/kmaterna/InSAR_CGM_readers_writers/blob/master/example_configs/track_071_vels.png)
 
 
-#### SOFTWARE TO-DOS FOR SCEC TEAM
+## SOFTWARE TO-DOS FOR SCEC TEAM
 To implement the HDF5 file format, the CGM team must create:
 1. ~~Function(s) to construct the SCEC CGM HDF5 from the CGM analysis [for internal use only].~~ **DONE**
 2. Example reader functions to read the full SCEC HDF5 file into a practical data structure, as an advanced user would do, in several commonly used programming languages:
