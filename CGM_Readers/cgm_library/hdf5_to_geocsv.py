@@ -5,6 +5,7 @@ Library functions to generate a geoCSV file for each time series pixel queried
 from . import io_cgm_hdf5
 import numpy as np
 import datetime as dt
+import re
 
 
 def extract_csv_wrapper(hdf_file, pixel_list, output_dir):
@@ -15,35 +16,30 @@ def extract_csv_wrapper(hdf_file, pixel_list, output_dir):
     :param pixel_list: list of structures [lon, lat, track]
     :param output_dir: directory where pixels' GeoCSVs will live
     """
-    cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);
+    cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     for pixel in pixel_list:
         desired_track = pixel[2];
 
         # Find the desired track in the hdf5 file
-        track_data_structure = [];
+        track_dict = {};
         for item in cgm_data_structure:
-            if item[0]["track_name"] == desired_track:
-                track_data_structure = item;
-        assert track_data_structure, ValueError("Desired track %s not found in hdf5 file " % desired_track);
-        track_metadata = track_data_structure[0];
-        track_total_data = track_data_structure[1];
-
-        grid_data = track_total_data[0];  # unpack lkv_data
-        lon_array = grid_data[0];     # unpack lkv_data
-        lat_array = grid_data[1];
-        ts_data = track_total_data[2];   # unpack time series information
+            if item["track_name"] == desired_track:
+                track_dict = item;
+        assert track_dict, ValueError("Desired track %s not found in hdf5 file " % desired_track);
 
         # Find the nearest row and column in the array
-        rownum, colnum = get_nearest_rowcol(pixel, lon_array, lat_array);
+        rownum, colnum = get_nearest_rowcol(pixel, track_dict["lon"], track_dict["lat"]);
 
         # Extract pixel time series data
-        pixel_time_series = extract_pixel_ts(ts_data, rownum, colnum);
-        pixel_lkv = extract_pixel_lkv(grid_data, rownum, colnum);
-        pixel_hgt = extract_pixel_height(grid_data, rownum, colnum);
+        pixel_time_series = extract_pixel_ts(track_dict, rownum, colnum);
+        pixel_lkv = [track_dict["lkv_E"][rownum][colnum],
+                     track_dict["lkv_N"][rownum][colnum],
+                     track_dict["lkv_U"][rownum][colnum]]
+        pixel_hgt = track_dict["dem"][rownum][colnum];
 
         # Write the GeoCSV format
         outfile = output_dir+"/pixel_"+str(pixel[0])+"_"+str(pixel[1])+"_"+str(pixel[2])+".csv";
-        write_geocsv2p0(pixel, track_metadata, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
+        write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
     return;
 
 
@@ -61,53 +57,25 @@ def get_nearest_rowcol(pixel, lon_array, lat_array):
     return rownum, colnum;
 
 
-def extract_pixel_ts(ts_data, rownum, colnum):
+def extract_pixel_ts(track_dict, rownum, colnum):
     """
     Extract the time series slice for a particular pixel
-    :param ts_data: data structure [dates, many arrays]
+    :param track_dict: data structure
     :param rownum: int
     :param colnum: int
     :return: array of dates, array of numbers
     """
-    dates_array = ts_data[0];
-    dates_array = [dt.datetime.strptime(x, "%Y%m%dT%H%M%S") for x in dates_array];
-    full_grids = ts_data[1];
-    single_time_series = [];
-    single_unc_series = [];
-    for i in range(len(full_grids)):
-        single_time_series.append(full_grids[i][rownum][colnum]);
-        single_unc_series.append(0);  # placeholder for real uncertainties in the CGM
+    dates_array, single_ts, single_unc = [], [], [];
+    for keyname in track_dict.keys():
+        if re.match(r"[0-9]{8}T[0-9]{6}", keyname):  # if we have time series slice, such as '20150121T134347'
+            dates_array.append(dt.datetime.strptime(keyname, "%Y%m%dT%H%M%S"));
+            single_ts.append(track_dict[keyname][rownum][colnum]);
+            single_unc.append(0);
     # Put dates_array and single_time_series in the proper chronological order
-    single_time_series = [x for _, x in sorted(zip(dates_array, single_time_series))];
-    single_unc_series = [x for _, x in sorted(zip(dates_array, single_unc_series))];
+    single_time_series = [x for _, x in sorted(zip(dates_array, single_ts))];
+    single_unc_series = [x for _, x in sorted(zip(dates_array, single_unc))];
     dates_array = sorted(dates_array);
     return [dates_array, single_time_series, single_unc_series];
-
-
-def extract_pixel_lkv(lkv_data, rownum, colnum):
-    """
-    Extract the look vector components for a particular pixel
-    :param lkv_data: data structure [lonarray, latarray, lkve_array, lkvn_array, lkvu_array, dem_array]
-    :param rownum: int
-    :param colnum: int
-    :return: [lkv_e, lkv_n, lkv_u]
-    """
-    lkve_array = lkv_data[2];
-    lkvn_array = lkv_data[3];
-    lkvu_array = lkv_data[4];
-    return [lkve_array[rownum][colnum], lkvn_array[rownum][colnum], lkvu_array[rownum][colnum]];
-
-
-def extract_pixel_height(grid_data, rownum, colnum):
-    """
-    Extract the dem height for a particular pixel
-    :param grid_data: data structure [lonarray, latarray, lkve_array, lkvn_array, lkvu_array, dem_array]
-    :param rownum: int
-    :param colnum: int
-    :return: pixel_hgt
-    """
-    dem = grid_data[5]
-    return dem[rownum][colnum];
 
 
 def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hgt, outfile):
