@@ -1,5 +1,5 @@
 """
-Library functions to generate a geoCSV file for each time series pixel queried
+Library functions to generate a geoCSV file for each time-series pixel queried
 """
 
 from . import io_cgm_hdf5
@@ -8,50 +8,69 @@ import datetime as dt
 import re
 
 
-def extract_csv_wrapper(hdf_file, pixel_list, output_dir):
+def extract_csv_wrapper(hdf_file_list, pixel_list, output_dir):
     """
-    Write GeoCSV for a list of one or more pixels and tracks. Pixel_list must have [lon, lat, track].
-    Each pixel can only handle one track for the moment.
+    Multiple-HDF5-File access function for sending multiple tracks, multiple pixels to GeoCSV.
+    One track per geoCSV (we are not storing more than one look vector in GeoCSV header).
+    Pixel_list must have [lon, lat].
+    :param hdf_file_list: name of one or several SCEC HDF5 Files, list
+    :param pixel_list: list of structures [lon, lat]
+    :param output_dir: directory where pixels' GeoCSVs will live
+    """
+    for hdf_file in hdf_file_list:
+        extract_csv_from_file(hdf_file, pixel_list, output_dir);
+    return;
+
+
+def extract_csv_from_file(hdf_file, pixel_list, output_dir):
+    """
+    Single-HDF5-File access function: Write GeoCSVs for a list of one or more pixels.
+    Pixel_list must have [lon, lat].
     :param hdf_file: name of SCEC HDF5 File
-    :param pixel_list: list of structures [lon, lat, track]
+    :param pixel_list: list of structures [lon, lat]
     :param output_dir: directory where pixels' GeoCSVs will live
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     for pixel in pixel_list:
-        desired_track = pixel[2];
 
-        # Find the desired track in the hdf5 file
-        track_dict = {};
-        for item in cgm_data_structure:
-            if item["track_name"] == desired_track:
-                track_dict = item;
-        assert track_dict, ValueError("Desired track %s not found in hdf5 file " % desired_track);
+        # Find each track in hdf5 file
+        for track_dict in cgm_data_structure:
+            current_track = track_dict["track_name"];
+            # Find nearest row and column in array
+            rownum, colnum = get_nearest_rowcol(pixel, track_dict["lon"], track_dict["lat"]);
+            if np.isnan(rownum):
+                # print("Pixel", pixel, "is outside bounding box for track %s " % current_track);  # just logging
+                continue;  # pixel is outside bounding box of this track
 
-        # Find the nearest row and column in the array
-        rownum, colnum = get_nearest_rowcol(pixel, track_dict["lon"], track_dict["lat"]);
+            # Extract pixel time series data
+            pixel_time_series = extract_pixel_ts(track_dict, rownum, colnum);
+            pixel_lkv = [track_dict["lkv_E"][rownum][colnum],
+                         track_dict["lkv_N"][rownum][colnum],
+                         track_dict["lkv_U"][rownum][colnum]]
+            pixel_hgt = track_dict["dem"][rownum][colnum];
+            if np.sum(np.isnan(pixel_time_series[1])) == len(pixel_time_series[1]):   # if all values are np.nan
+                # print("Pixel", pixel, "is not in valid-data domain for track %s " % current_track);  # just logging
+                continue;  # pixel is outside valid data domain of this track
 
-        # Extract pixel time series data
-        pixel_time_series = extract_pixel_ts(track_dict, rownum, colnum);
-        pixel_lkv = [track_dict["lkv_E"][rownum][colnum],
-                     track_dict["lkv_N"][rownum][colnum],
-                     track_dict["lkv_U"][rownum][colnum]]
-        pixel_hgt = track_dict["dem"][rownum][colnum];
-
-        # Write the GeoCSV format
-        outfile = output_dir+"/pixel_"+str(pixel[0])+"_"+str(pixel[1])+"_"+str(pixel[2])+".csv";
-        write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
+            # Write GeoCSV format
+            outfile = output_dir+"/pixel_"+str(pixel[0])+"_"+str(pixel[1])+"_"+str(current_track)+".csv";
+            write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
     return;
 
 
 def get_nearest_rowcol(pixel, lon_array, lat_array):
     """
-    :param pixel: [lon, lat, track]
-    :param lon_array: 1D array of numbers representing geocoded longitudes in the geocoded array
-    :param lat_array: 1D array of numbers representing geocoded latitudes in the geocoded array
+    :param pixel: [lon, lat]
+    :param lon_array: 1D array of numbers representing geocoded longitudes in geocoded array
+    :param lat_array: 1D array of numbers representing geocoded latitudes in geocoded array
     :return: rownum, colnum
     """
     pixel_lon = pixel[0];
     pixel_lat = pixel[1];
+    if pixel_lon < lon_array[0] or pixel_lon > lon_array[-1]:
+        return np.nan, np.nan
+    if pixel_lat < lat_array[0] or pixel_lat > lat_array[-1]:
+        return np.nan, np.nan
     colnum = np.argmin(np.abs(lon_array - pixel_lon));
     rownum = np.argmin(np.abs(lat_array - pixel_lat));
     return rownum, colnum;
@@ -59,7 +78,7 @@ def get_nearest_rowcol(pixel, lon_array, lat_array):
 
 def extract_pixel_ts(track_dict, rownum, colnum):
     """
-    Extract the time series slice for a particular pixel
+    Extract time series slice for a particular pixel
     :param track_dict: data structure
     :param rownum: int
     :param colnum: int
@@ -71,7 +90,7 @@ def extract_pixel_ts(track_dict, rownum, colnum):
             dates_array.append(dt.datetime.strptime(keyname, "%Y%m%dT%H%M%S"));
             single_ts.append(track_dict[keyname][rownum][colnum]);
             single_unc.append(0);
-    # Put dates_array and single_time_series in the proper chronological order
+    # Put dates_array and single_time_series in proper chronological order
     single_time_series = [x for _, x in sorted(zip(dates_array, single_ts))];
     single_unc_series = [x for _, x in sorted(zip(dates_array, single_unc))];
     dates_array = sorted(dates_array);
@@ -80,7 +99,7 @@ def extract_pixel_ts(track_dict, rownum, colnum):
 
 def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hgt, outfile):
     """
-    :param pixel: structure with [lon, lat, track]
+    :param pixel: structure with [lon, lat]
     :param metadata_dictionary: a dictionary with many attributes
     :param pixel_time_series: [list_of_dts, list_of_displacements, list_of_uncs]
     :param lkv: [lkv_e, lkv_n, lkv_u]

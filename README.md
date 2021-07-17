@@ -89,10 +89,10 @@ You can extract pixels as GeoCSV using this library. Each pixel's time series wi
 #!/usr/bin/env python
 import cgm_library
 
-reference_pixel = [-116.57164, 35.32064, "D071"];
-los_angeles = [-118.2437, 34.0522, "D071"];
+reference_pixel = [-116.57164, 35.32064];
+los_angeles = [-118.2437, 34.0522];
 pixel_list = [reference_pixel, los_angeles];
-cgm_library.hdf5_to_geocsv.extract_csv_wrapper("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
+cgm_library.hdf5_to_geocsv.extract_csv_from_file("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
 ```
 
 You can also extract a layer of data for a particular track into a GMT grid file. 

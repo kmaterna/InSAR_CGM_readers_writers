@@ -128,7 +128,7 @@ def read_cgm_hdf5_full_data(input_filename):
             track_dict[item] = np.flipud(np.array(TS.get(item)));
 
         cgm_data_structure.append(track_dict);  # a list of dictionaries
-        print(track_dict.keys());
+        # print(track_dict.keys());
     return cgm_data_structure;
 
 
