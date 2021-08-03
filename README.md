@@ -63,6 +63,7 @@ Directions to package up CGM InSAR HDF5 file from local files:
 
 ## USER'S CORNER FOR SCEC HDF5 FILE
 1. If you plan to read HDF5 into Python: Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements if necessary (if desired, you can set up dedicated conda environment in requirements.txt).  Install software by calling ```python setup.py install```
+### Extracting Metadata
 2. Check out an HDF5 file.  One option is to view the basic metadata and its contents in bash:  
 ```bash
 #!/bin/bash 
