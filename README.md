@@ -84,7 +84,7 @@ import cgm_library
 filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
 cgm_python_data_structure = cgm_library.io_cgm_hdf5.read_cgm_hdf5_full_data(filename);
 ```
-### Extracting Layers
+### Extracting Time Series
 You can extract pixels as GeoCSV using this library. Each pixel's time series will be saved in a GeoCSV file. 
  ```python
 #!/usr/bin/env python
@@ -96,6 +96,7 @@ pixel_list = [reference_pixel, los_angeles];
 cgm_library.hdf5_to_geocsv.extract_csv_from_file("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
 ```
 
+### Extracting Layers
 You can also extract a layer of data for a particular track into a GMT grid file. 
 A GMT installation with GDAL is required. 
 (for more: https://docs.generic-mapping-tools.org/latest/cookbook/features.html?highlight=ndvi#reading-more-complex-multi-band-images-or-grids)
