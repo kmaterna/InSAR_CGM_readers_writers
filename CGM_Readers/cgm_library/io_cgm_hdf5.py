@@ -122,13 +122,15 @@ def read_cgm_hdf5_full_data(input_filename):
         Velocities = track_data.get('Velocities');
         track_dict["velocities"] = np.flipud(np.array(Velocities.get("velocities")));
 
-        # Get time series: [2D_array_of_positions] for each time
-        TS = track_data.get('Time_Series');
-        for item in TS.keys():
-            track_dict[item] = np.flipud(np.array(TS.get(item)));
+        # Get time series: [2D_array_of_positions] for each time, if included in this file
+        try:
+            TS = track_data.get('Time_Series');
+            for item in TS.keys():
+                track_dict[item] = np.flipud(np.array(TS.get(item)));
+        except Exception:
+            pass
 
         cgm_data_structure.append(track_dict);  # a list of dictionaries
-        # print(track_dict.keys());
     return cgm_data_structure;
 
 
