@@ -96,6 +96,23 @@ pixel_list = [reference_pixel, los_angeles];
 cgm_library.hdf5_to_geocsv.extract_csv_from_file("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
 ```
 
+### Extracting Velocities into other formats
+You can extract velocities of individual pixels (returned directly), or of geographic regions (written as CSV or JSON).   
+ ```python
+#!/usr/bin/env python
+import cgm_library
+
+reference_pixel = [-116.57164, 35.32064];
+los_angeles = [-118.2437, 34.0522];
+pixel_list = [reference_pixel, los_angeles];
+
+# extracting velocities
+velocity_list = cgm_library.hdf5_to_geocsv.extract_vel_from_file("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list);
+cgm_library.hdf5_to_geocsv.velocities_to_csv("test_SCEC_CGM_InSAR_v0_0_1.hdf5", [-118.3, -118.2, 34.4, 34.5], "Output");
+cgm_library.hdf5_to_geocsv.velocities_to_json("test_SCEC_CGM_InSAR_v0_0_1.hdf5", [-118.3, -118.2, 34.4, 34.5], "Output");
+```
+
+
 ### Extracting Layers
 You can also extract a layer of data for a particular track into a GMT grid file. 
 A GMT installation with GDAL is required. 
