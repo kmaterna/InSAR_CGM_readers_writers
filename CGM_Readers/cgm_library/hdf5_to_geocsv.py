@@ -22,6 +22,21 @@ def extract_csv_wrapper(hdf_file_list, pixel_list, output_dir):
     return;
 
 
+def extract_vels_wrapper(hdf_file_list, pixel_list):
+    """
+    Multiple-HDF5-File access function for sending multiple tracks, multiple pixel velocities
+    Pixel_list must have [lon, lat].
+    :param hdf_file_list: name of one or several SCEC HDF5 Files, list
+    :param pixel_list: list of structures [lon, lat]
+    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers. ex: [0.0, [lkvENU], 'D071']
+    """
+    velocity_list = [];
+    for hdf_file in hdf_file_list:
+        velocity_list_one_track = extract_vel_from_file(hdf_file, pixel_list);
+        velocity_list = velocity_list + velocity_list_one_track;
+    return velocity_list;
+
+
 def extract_csv_from_file(hdf_file, pixel_list, output_dir):
     """
     Single-HDF5-File access function: Write GeoCSVs for a list of one or more pixels.
@@ -56,6 +71,34 @@ def extract_csv_from_file(hdf_file, pixel_list, output_dir):
             outfile = output_dir+"/pixel_"+str(pixel[0])+"_"+str(pixel[1])+"_"+str(current_track)+".csv";
             write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
     return;
+
+
+def extract_vel_from_file(hdf_file, pixel_list):
+    """
+    Single-HDF5-File access function: get velocities for 1 or more pixels
+    Pixel_list must have [lon, lat].
+    :param hdf_file: name of SCEC HDF5 File
+    :param pixel_list: list of structures [lon, lat]
+    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers. ex: [0.0, [lkvENU], 'D071']
+    """
+    cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
+    velocity_list = [];
+    for pixel in pixel_list:
+
+        # Find each track in hdf5 file
+        for track_dict in cgm_data_structure:
+            current_track = track_dict["track_name"];
+            # Find nearest row and column in array
+            rownum, colnum = get_nearest_rowcol(pixel, track_dict["lon"], track_dict["lat"]);
+            if np.isnan(rownum):
+                # print("Pixel", pixel, "is outside bounding box for track %s " % current_track);  # just logging
+                continue;  # pixel is outside bounding box of this track
+
+            # Extract pixel time series data
+            [pixel_vel, lkv] = extract_pixel_vel(track_dict, rownum, colnum);
+            velocity_list.append([pixel_vel, lkv, current_track]);
+
+    return velocity_list;
 
 
 def get_nearest_rowcol(pixel, lon_array, lat_array):
@@ -95,6 +138,21 @@ def extract_pixel_ts(track_dict, rownum, colnum):
     single_unc_series = [x for _, x in sorted(zip(dates_array, single_unc))];
     dates_array = sorted(dates_array);
     return [dates_array, single_time_series, single_unc_series];
+
+
+def extract_pixel_vel(track_dict, rownum, colnum):
+    """
+    Extract velocity / LOS for a particular pixel
+    :param track_dict: data structure
+    :param rownum: int
+    :param colnum: int
+    :return: velocity, array of [ENU] look vector
+    """
+    velocity = track_dict["velocities"][rownum][colnum];
+    lkv_e = track_dict["lkv_E"][rownum][colnum]
+    lkv_n = track_dict["lkv_N"][rownum][colnum]
+    lkv_u = track_dict["lkv_U"][rownum][colnum]
+    return [velocity, [lkv_e, lkv_n, lkv_u]];
 
 
 def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hgt, outfile):
