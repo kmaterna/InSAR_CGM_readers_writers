@@ -146,7 +146,10 @@ def extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_d
                 continue;  # pixel is outside valid data domain of this track
 
             # Write GeoCSV format
-            outfile = output_dir+"/pixel_"+str(pixel[0])+"_"+str(pixel[1])+"_"+str(current_track)+".csv";
+            pixel_lon_found = np.round(track_dict["lon"][colnum], 3);   # filename based on nearest InSAR pixel
+            pixel_lat_found = np.round(track_dict["lat"][rownum], 3);   # filename based on nearest InSAR pixel
+            print(pixel_lon_found, pixel_lat_found);
+            outfile = output_dir+"/pixel_"+str(pixel_lon_found)+"_"+str(pixel_lat_found)+"_"+str(current_track)+".csv";
             write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
     return;
 
