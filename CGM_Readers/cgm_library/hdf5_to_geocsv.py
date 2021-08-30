@@ -17,10 +17,14 @@ def extract_csv_wrapper(hdf_file_list, pixel_list, output_dir):
     :param hdf_file_list: name of one or several SCEC HDF5 Files, list
     :param pixel_list: list of structures [lon, lat]
     :param output_dir: directory where pixels' GeoCSVs will live
+    :returns: a list of pixel structures of metadata [lon, lat, vel, lkv, ]
+    for convenient extracting of one pixel TS on the public website.
     """
+    pixel_structure_list = [];
     for hdf_file in hdf_file_list:
-        extract_csv_from_file(hdf_file, pixel_list, output_dir);
-    return;
+        pixel_structures = extract_csv_from_file(hdf_file, pixel_list, output_dir);
+        pixel_structure_list = pixel_structure_list + pixel_structures;
+    return pixel_structure_list;
 
 
 def extract_vels_wrapper(hdf_file_list, pixel_list):
@@ -45,10 +49,13 @@ def extract_csv_from_file(hdf_file, pixel_list, output_dir):
     :param hdf_file: name of SCEC HDF5 File
     :param pixel_list: list of structures [lon, lat]
     :param output_dir: directory where pixels' GeoCSVs will live
+    :returns: a list of pixel structures of metadata [lon, lat, vel, lkv, ]
+    for convenient extracting of one pixel TS on the public website.
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
-    extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_dir);  # perform CSV write function
-    return;
+    pixel_structures = extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_dir);
+    # perform CSV write function
+    return pixel_structures;
 
 
 def extract_vel_from_file(hdf_file, pixel_list):
@@ -123,7 +130,10 @@ def extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_d
     :param cgm_data_structure: list of dictionaries
     :param pixel_list: list of structures [lon, lat]
     :param output_dir: directory where pixels' GeoCSVs will live
+    :returns: a list of pixel structures of metadata [lon, lat, vel, lkv, ]
+    for convenient extracting of one pixel TS on the public website.
     """
+    pixel_structures = [];
     for pixel in pixel_list:
 
         # Find each track in hdf5 file
@@ -133,6 +143,7 @@ def extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_d
             rownum, colnum = get_nearest_rowcol(pixel, track_dict["lon"], track_dict["lat"]);
             if np.isnan(rownum):
                 # print("Pixel", pixel, "is outside bounding box for track %s " % current_track);  # just logging
+                pixel_structures.append([]);   # error code for velocity out of bounds
                 continue;  # pixel is outside bounding box of this track
 
             # Extract pixel time series data
@@ -141,8 +152,10 @@ def extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_d
                          track_dict["lkv_N"][rownum][colnum],
                          track_dict["lkv_U"][rownum][colnum]]
             pixel_hgt = track_dict["dem"][rownum][colnum];
+            pixel_velocity = track_dict["velocities"][rownum][colnum];
             if np.sum(np.isnan(pixel_time_series[1])) == len(pixel_time_series[1]):   # if all values are np.nan
                 # print("Pixel", pixel, "is not in valid-data domain for track %s " % current_track);  # just logging
+                pixel_structures.append([]);  # error code for no velocity data
                 continue;  # pixel is outside valid data domain of this track
 
             # Write GeoCSV format
@@ -150,8 +163,10 @@ def extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_d
             pixel_lat_found = np.round(track_dict["lat"][rownum], 3);   # filename based on nearest InSAR pixel
             # print(pixel_lon_found, pixel_lat_found);   # debugging
             outfile = output_dir+"/pixel_"+str(pixel_lon_found)+"_"+str(pixel_lat_found)+"_"+str(current_track)+".csv";
-            write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);
-    return;
+            write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);  # write csv
+            pixel_metadata = [pixel_lon_found, pixel_lat_found, pixel_velocity, pixel_lkv, current_track];
+            pixel_structures.append(pixel_metadata);   # save off pixel velocity and metadata
+    return pixel_structures;
 
 
 def get_nearest_rowcol(pixel, lon_array, lat_array):
