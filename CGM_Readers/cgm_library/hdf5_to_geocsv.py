@@ -17,7 +17,7 @@ def extract_csv_wrapper(hdf_file_list, pixel_list, output_dir):
     :param hdf_file_list: name of one or several SCEC HDF5 Files, list
     :param pixel_list: list of structures [lon, lat]
     :param output_dir: directory where pixels' GeoCSVs will live
-    :returns: a list of pixel structures of metadata [lon, lat, vel, lkv, ]
+    :returns: a list of pixel structures of metadata with velocity: [lon, lat, vel, lkv, track]
     for convenient extracting of one pixel TS on the public website.
     """
     pixel_structure_list = [];
@@ -33,7 +33,8 @@ def extract_vels_wrapper(hdf_file_list, pixel_list):
     Pixel_list must have [lon, lat].
     :param hdf_file_list: name of one or several SCEC HDF5 Files, list
     :param pixel_list: list of structures [lon, lat]
-    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers. ex: [0.0, [lkvENU], 'D071']
+    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers.
+    ex: [lon, lat, 0.0, [lkvENU], 'D071']
     """
     velocity_list = [];
     for hdf_file in hdf_file_list:
@@ -64,7 +65,8 @@ def extract_vel_from_file(hdf_file, pixel_list):
     Pixel_list must have [lon, lat].
     :param hdf_file: name of SCEC HDF5 File
     :param pixel_list: list of structures [lon, lat]
-    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers. ex: [0.0, [lkvENU], 'D071']
+    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers.
+    ex: [lon, lat, 0.0, [lkvENU], 'D071']
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
@@ -77,12 +79,14 @@ def velocities_to_csv(hdf_file, bounding_box, output_dir):
     :param hdf_file: name of HDF file with one or more tracks
     :param bounding_box: [W, E, S, N] in longitude and latitude
     :param output_dir: string
+    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers.
+    ex: [lon, lat, 0.0, [lkvENU], 'D071']
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
-    write_vels_to_csv(pixel_list, velocity_list, output_dir);  # Then write to CSV
-    return;
+    write_vels_to_csv(velocity_list, output_dir);  # Then write to CSV
+    return velocity_list;
 
 
 def velocities_to_json(hdf_file, bounding_box, output_dir):
@@ -91,12 +95,14 @@ def velocities_to_json(hdf_file, bounding_box, output_dir):
     :param hdf_file: name of HDF file with one or more tracks
     :param bounding_box: [W, E, S, N] in longitude and latitude
     :param output_dir: string
+    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers.
+    ex: [lon, lat, 0.0, [lkvENU], 'D071']
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
-    write_vels_to_json(pixel_list, velocity_list, output_dir);  # Then write to JSON
-    return;
+    write_vels_to_json(velocity_list, output_dir);  # Then write to JSON
+    return velocity_list;
 
 
 def extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list):
@@ -105,9 +111,10 @@ def extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list):
     Pixel_list must have [lon, lat].
     :param cgm_data_structure: list of dictionaries
     :param pixel_list: list of structures [lon, lat]
-    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers. ex: [0.0, [lkvENU], 'D071']
+    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers.
+    ex: [lon, lat, 0.0, [lkvENU], 'D071']
     """
-    velocity_list = [];
+    pixel_found_list, velocity_list = [], [];
     for pixel in pixel_list:
         # Find each track in data structure
         for track_dict in cgm_data_structure:
@@ -119,8 +126,8 @@ def extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list):
                 continue;  # pixel is outside bounding box of this track
 
             # Extract pixel time series data
-            [pixel_vel, lkv] = extract_pixel_vel(track_dict, rownum, colnum);
-            velocity_list.append([pixel_vel, lkv, current_track]);
+            [lon_found, lat_found, pixel_vel, lkv] = extract_pixel_vel(track_dict, rownum, colnum);
+            velocity_list.append([lon_found, lat_found, pixel_vel, lkv, current_track]);
     return velocity_list;
 
 
@@ -161,9 +168,10 @@ def extract_csv_from_cgm_data_structure(cgm_data_structure, pixel_list, output_d
             # Write GeoCSV format
             pixel_lon_found = np.round(track_dict["lon"][colnum], 3);   # filename based on nearest InSAR pixel
             pixel_lat_found = np.round(track_dict["lat"][rownum], 3);   # filename based on nearest InSAR pixel
+            pixel_found = [pixel_lon_found, pixel_lat_found];
             # print(pixel_lon_found, pixel_lat_found);   # debugging
             outfile = output_dir+"/pixel_"+str(pixel_lon_found)+"_"+str(pixel_lat_found)+"_"+str(current_track)+".csv";
-            write_geocsv2p0(pixel, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);  # write csv
+            write_geocsv2p0(pixel_found, track_dict, pixel_time_series, pixel_lkv, pixel_hgt, outfile);  # write csv
             pixel_metadata = [pixel_lon_found, pixel_lat_found, pixel_velocity, pixel_lkv, current_track];
             pixel_structures.append(pixel_metadata);   # save off pixel velocity and metadata
     return pixel_structures;
@@ -231,11 +239,13 @@ def extract_pixel_vel(track_dict, rownum, colnum):
     :param colnum: int
     :return: velocity, array of [ENU] look vector
     """
+    pixel_lon_found = np.round(track_dict["lon"][colnum], 3);  # filename based on nearest InSAR pixel
+    pixel_lat_found = np.round(track_dict["lat"][rownum], 3);  # filename based on nearest InSAR pixel
     velocity = track_dict["velocities"][rownum][colnum];
     lkv_e = track_dict["lkv_E"][rownum][colnum]
     lkv_n = track_dict["lkv_N"][rownum][colnum]
     lkv_u = track_dict["lkv_U"][rownum][colnum]
-    return [velocity, [lkv_e, lkv_n, lkv_u]];
+    return [pixel_lon_found, pixel_lat_found, velocity, [lkv_e, lkv_n, lkv_u]];
 
 
 def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hgt, outfile):
@@ -277,26 +287,27 @@ def write_geocsv2p0(pixel, metadata_dictionary, pixel_time_series, lkv, pixel_hg
     return;
 
 
-def write_vels_to_csv(pixel_list, velocity_list, output_dir):
-    """Write pixels and their velocities / Look vectors / tracks into a CSV file"""
-    if len(pixel_list) == 0:
+def write_vels_to_csv(velocity_list, output_dir):
+    """Write pixels and their locations / velocities / Look vectors / tracks into a CSV file"""
+    if len(velocity_list) == 0:
         print("No pixels found. Not creating velocity csv. ");
         return;
     ofile = open(output_dir+"/velocity_list.csv", 'w');
-    for pixel, item in zip(pixel_list, velocity_list):
-        ofile.write("%f, %f, " % (pixel[0], pixel[1]) );
-        ofile.write("%f, %f, %f, %f, %s\n" % (item[0], item[1][0], item[1][1], item[1][2], item[2]) );
+    for item in velocity_list:
+        ofile.write("%f, %f, " % (item[0], item[1]) );
+        ofile.write("%f, %f, %f, %f, %s\n" % (item[2], item[3][0], item[3][1], item[3][2], item[4]) );
     ofile.close();
     return;
 
 
-def write_vels_to_json(pixel_list, velocity_list, output_dir):
-    """Write pixels and their velocities / Look vectors / tracks into a JSON file"""
+def write_vels_to_json(velocity_list, output_dir):
+    """Write pixels and their locations / velocities / Look vectors / tracks into a JSON file"""
     dictionary_list = [];
-    for pixel, item in zip(pixel_list, velocity_list):
-        dictionary_list.append({"lon": pixel[0], "lat": pixel[1], "velocity": item[0].astype(float),
-                                "lkv_E": item[1][0].astype(float), "lkv_N": item[1][1].astype(float),
-                                "lkv_U": item[1][2].astype(float), "track": item[2]});
+    for item in velocity_list:
+        dictionary_list.append({"lon": item[0].astype(float), "lat": item[1].astype(float),
+                                "velocity": item[2].astype(float),
+                                "lkv_E": item[3][0].astype(float), "lkv_N": item[3][1].astype(float),
+                                "lkv_U": item[3][2].astype(float), "track": item[4]});
     with open(output_dir+"/velocity_list.json", 'w') as fp:
         json.dump(dictionary_list, fp);
     return;
