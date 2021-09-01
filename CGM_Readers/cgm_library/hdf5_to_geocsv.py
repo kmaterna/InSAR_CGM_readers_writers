@@ -86,7 +86,7 @@ def velocities_to_csv(hdf_file, bounding_box, output_dir):
     pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
     write_vels_to_csv(velocity_list, output_dir);  # Then write to CSV
-    return velocity_list;
+    return bounding_box;
 
 
 def velocities_to_json(hdf_file, bounding_box, output_dir):
@@ -102,7 +102,7 @@ def velocities_to_json(hdf_file, bounding_box, output_dir):
     pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
     write_vels_to_json(velocity_list, output_dir);  # Then write to JSON
-    return velocity_list;
+    return bounding_box;
 
 
 def extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list):
