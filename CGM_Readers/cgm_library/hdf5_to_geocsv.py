@@ -73,14 +73,30 @@ def extract_vel_from_file(hdf_file, pixel_list):
     return velocity_list;
 
 
+def write_full_track_vels_to_csv(hdf_file, output_dir):
+    """
+    Writes a CSV of all velocities within one track. Takes a minute and writes a large file. Useful for caching.
+    :param hdf_file: name of HDF file with one or more tracks
+    :param output_dir: string
+    :returns: bounding box
+    """
+    cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
+    track_dict = cgm_data_structure[0];  # take the first track, a safe assumption given we use 1-track-per-file
+    bounding_box = [np.min(track_dict["lon"]), np.max(track_dict["lon"]),
+                    np.min(track_dict["lat"]), np.max(track_dict["lat"])];
+    pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
+    velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
+    write_vels_to_csv(velocity_list, output_dir);  # Then write to CSV
+    return bounding_box;
+
+
 def velocities_to_csv(hdf_file, bounding_box, output_dir):
     """
     Writes a CSV of velocities within the bounding box
     :param hdf_file: name of HDF file with one or more tracks
     :param bounding_box: [W, E, S, N] in longitude and latitude
     :param output_dir: string
-    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers.
-    ex: [lon, lat, 0.0, [lkvENU], 'D071']
+    :returns: bounding box
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
@@ -95,8 +111,7 @@ def velocities_to_json(hdf_file, bounding_box, output_dir):
     :param hdf_file: name of HDF file with one or more tracks
     :param bounding_box: [W, E, S, N] in longitude and latitude
     :param output_dir: string
-    :returns: velocity_list: list of velocities in mm/yr, look vectors, and track numbers.
-    ex: [lon, lat, 0.0, [lkvENU], 'D071']
+    :returns: bounding box
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
@@ -237,10 +252,10 @@ def extract_pixel_vel(track_dict, rownum, colnum):
     :param track_dict: data structure
     :param rownum: int
     :param colnum: int
-    :return: velocity, array of [ENU] look vector
+    :return: lon, lat, velocity, array of [ENU] look vector
     """
-    pixel_lon_found = np.round(track_dict["lon"][colnum], 3);  # filename based on nearest InSAR pixel
-    pixel_lat_found = np.round(track_dict["lat"][rownum], 3);  # filename based on nearest InSAR pixel
+    pixel_lon_found = np.round(track_dict["lon"][colnum], 3);  # nearest InSAR pixel
+    pixel_lat_found = np.round(track_dict["lat"][rownum], 3);  # nearest InSAR pixel
     velocity = track_dict["velocities"][rownum][colnum];
     lkv_e = track_dict["lkv_E"][rownum][colnum]
     lkv_n = track_dict["lkv_N"][rownum][colnum]
