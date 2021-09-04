@@ -78,16 +78,16 @@ def write_full_track_vels_to_csv(hdf_file, output_dir):
     Writes a CSV of all velocities within one track. Takes a minute and writes a large file. Useful for caching.
     :param hdf_file: name of HDF file with one or more tracks
     :param output_dir: string
-    :returns: bounding box
+    :returns: bounding box metadata, [W, E, S, N, nx, ny]
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
     track_dict = cgm_data_structure[0];  # take the first track, a safe assumption given we use 1-track-per-file
     bounding_box = [np.min(track_dict["lon"]), np.max(track_dict["lon"]),
                     np.min(track_dict["lat"]), np.max(track_dict["lat"])];
-    pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
+    pixel_list, bounding_box_metadata = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
     write_vels_to_csv(velocity_list, output_dir);  # Then write to CSV
-    return bounding_box;
+    return bounding_box_metadata;
 
 
 def velocities_to_csv(hdf_file, bounding_box, output_dir):
@@ -96,13 +96,13 @@ def velocities_to_csv(hdf_file, bounding_box, output_dir):
     :param hdf_file: name of HDF file with one or more tracks
     :param bounding_box: [W, E, S, N] in longitude and latitude
     :param output_dir: string
-    :returns: bounding box
+    :returns: bounding box metadata, [W, E, S, N, nx, ny]
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
-    pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
+    pixel_list, bounding_box_metadata = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
     write_vels_to_csv(velocity_list, output_dir);  # Then write to CSV
-    return bounding_box;
+    return bounding_box_metadata;
 
 
 def velocities_to_json(hdf_file, bounding_box, output_dir):
@@ -111,13 +111,13 @@ def velocities_to_json(hdf_file, bounding_box, output_dir):
     :param hdf_file: name of HDF file with one or more tracks
     :param bounding_box: [W, E, S, N] in longitude and latitude
     :param output_dir: string
-    :returns: bounding box
+    :returns: bounding box metadata [W, E, S, N, nx, ny]
     """
     cgm_data_structure = io_cgm_hdf5.read_cgm_hdf5_full_data(hdf_file);  # list of tracks
-    pixel_list = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
+    pixel_list, bounding_box_metadata = unpack_bounding_box(bounding_box);  # 1D list of pixels (each are [lon, lat])
     velocity_list = extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list);
     write_vels_to_json(velocity_list, output_dir);  # Then write to JSON
-    return bounding_box;
+    return bounding_box_metadata;
 
 
 def extract_vel_from_cgm_data_structure(cgm_data_structure, pixel_list):
@@ -214,7 +214,9 @@ def unpack_bounding_box(bounding_box, xinc=0.002, yinc=0.002):
     """
     Just a geometric function on a bounding box. xinc and yinc are in degrees
     Default xinc/yinc are same as default posting for cgm insar product
+    We start on a valid InSAR pixel (rounded to odd increments of 0.002).
     Returns a 1D list of pixels, in the form [lon, lat]
+    Returns an expended bounding box metadata: [W, E, S, N, nx, ny]
     """
     [w, e, s, n] = bounding_box;
     lon_array = np.arange(w, e, xinc);
@@ -222,7 +224,8 @@ def unpack_bounding_box(bounding_box, xinc=0.002, yinc=0.002):
     X, Y = np.meshgrid(lon_array, lat_array);
     pixel_list = np.vstack([X.ravel(), Y.ravel()])
     pixel_list = [[pixel_list[0][i], pixel_list[1][i]] for i in range(len(pixel_list[0]))];  # unpacking
-    return pixel_list;
+    expanded_bounding_box = [w, e, s, n, len(lon_array), len(lat_array)];
+    return pixel_list, expanded_bounding_box;
 
 
 def extract_pixel_ts(track_dict, rownum, colnum):
