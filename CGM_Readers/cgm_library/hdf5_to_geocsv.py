@@ -219,6 +219,10 @@ def unpack_bounding_box(bounding_box, xinc=0.002, yinc=0.002):
     Returns an expended bounding box metadata: [W, E, S, N, nx, ny]
     """
     [w, e, s, n] = bounding_box;
+    w = nearest_odd_thousanth(w, -0.001);
+    e = nearest_odd_thousanth(e, 0.001);
+    s = nearest_odd_thousanth(s, -0.001);
+    n = nearest_odd_thousanth(n, 0.001);
     lon_array = np.arange(w, e, xinc);
     lat_array = np.arange(s, n, yinc);
     X, Y = np.meshgrid(lon_array, lat_array);
@@ -226,6 +230,15 @@ def unpack_bounding_box(bounding_box, xinc=0.002, yinc=0.002):
     pixel_list = [[pixel_list[0][i], pixel_list[1][i]] for i in range(len(pixel_list[0]))];  # unpacking
     expanded_bounding_box = [w, e, s, n, len(lon_array), len(lat_array)];
     return pixel_list, expanded_bounding_box;
+
+
+def nearest_odd_thousanth(number, potential_offset):
+    """Take an arbitrary number, and return the nearest InSAR pixel coordinate, given that pixels are every 0.002 on
+    odd numbered thousanths"""
+    retval = np.round(number, 3);
+    if np.mod(retval*1000, 2) == 0:
+        retval = retval + potential_offset;
+    return retval;
 
 
 def extract_pixel_ts(track_dict, rownum, colnum):
