@@ -324,6 +324,7 @@ def write_vels_to_csv(velocity_list, output_dir):
         print("No pixels found. Not creating velocity csv. ");
         return;
     ofile = open(output_dir+"/velocity_list.csv", 'w');
+    ofile.write("# lon, lat, velocity(mm/yr), lkv_E, lkv_N, lkv_U, track\n");
     for item in velocity_list:
         ofile.write("%f, %f, " % (item[0], item[1]) );
         ofile.write("%f, %f, %f, %f, %s\n" % (item[2], item[3][0], item[3][1], item[3][2], item[4]) );
