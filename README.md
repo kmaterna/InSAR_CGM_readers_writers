@@ -76,13 +76,14 @@ Alternately, you can look at the basic metadata in gdal:
 #!/bin/bash
 gdalinfo test_SCEC_CGM_InSAR_v0_0_1.hdf5
 ```
-As a third option, you can look at the basic metadata in Python:
+As a third option, you can look at the basic metadata from a dictionary in Python:
 ```python
 #!/usr/bin/env python
 import cgm_library
 
 filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
 cgm_python_data_structure = cgm_library.io_cgm_hdf5.read_cgm_hdf5_full_data(filename);
+print(cgm_python_data_structure[0].keys())
 ```
 ### Extracting Time Series
 You can extract pixels as GeoCSV using this library. Each pixel's time series will be saved in a GeoCSV file. 

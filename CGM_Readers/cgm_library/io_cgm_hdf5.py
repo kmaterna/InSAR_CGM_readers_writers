@@ -81,7 +81,6 @@ def read_cgm_hdf5_demo_python(input_filename):
 def read_cgm_hdf5_full_data(input_filename):
     """
     Input function for HDF5 file of CGM working group with velocities and time series.
-    Only operates on full HDF5 files, not velocity-only
 
     :param input_filename: an HDF5 file
     :return: internal data structure for the data in an hdf5 file.

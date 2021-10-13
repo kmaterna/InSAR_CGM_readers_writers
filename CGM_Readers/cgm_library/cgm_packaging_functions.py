@@ -84,11 +84,24 @@ def read_netcdf4(filename):
     """
     print("Reading file %s " % filename);
     rootgrp = Dataset(filename, "r");
-    [xkey, ykey, zkey] = rootgrp.variables.keys();  # assuming they come in a logical order like (lon, lat, z)
-    xvar = rootgrp.variables[xkey];
-    yvar = rootgrp.variables[ykey];
-    zvar = rootgrp.variables[zkey];
-    return [xvar[:], yvar[:], zvar[:, :]];
+    if len(rootgrp.variables.keys()) == 6:
+        # Use a gdal parsing: ['x_range', 'y_range', 'z_range', 'spacing', 'dimension', 'z']
+        xinc = float(rootgrp.variables['spacing'][0])
+        yinc = float(rootgrp.variables['spacing'][1])
+        xstart = float(rootgrp.variables['x_range'][0]) + xinc/2  # pixel-node-registered
+        xfinish = float(rootgrp.variables['x_range'][1])
+        xvar = np.arange(xstart, xfinish, xinc);
+        ystart = float(rootgrp.variables['y_range'][0]) + xinc/2  # pixel-node-registered
+        yfinish = float(rootgrp.variables['y_range'][1])
+        yvar = np.arange(ystart, yfinish, yinc);
+        zvar = rootgrp.variables['z'][:].copy();
+        zvar = np.flipud(np.reshape(zvar, (len(yvar), len(xvar))));  # frustrating.
+    else:
+        [xkey, ykey, zkey] = rootgrp.variables.keys();  # assuming they come in a logical order like (lon, lat, z)
+        xvar = rootgrp.variables[xkey][:];
+        yvar = rootgrp.variables[ykey][:];
+        zvar = rootgrp.variables[zkey][:, :];
+    return [xvar, yvar, zvar];
 
 
 def verify_same_shapes(track_dict):
