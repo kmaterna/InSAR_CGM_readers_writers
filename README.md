@@ -2,12 +2,7 @@
 
 We aim to present the SCEC CGM InSAR Product as one HDF5 file per track, that can be parsed and presented by the SCEC CGM website and other programs. 
 
-**For SCEC website:** the CGM website will run a script that extracts a velocity or time series at one or more lon/lat pairs and returns a time series in geoCSV for the user.   
-
-**For advanced users:** the user can download the full SCEC CGM HDF5 files and parse their own useful features with some guidance and reading tools. 
-
-
-## CGM InSAR HDF5 STRUCTURE 
+## CGM InSAR HDF5 Structure 
 
 The current HDF5 structure is envisioned as follows: 
 ```bash
@@ -43,9 +38,9 @@ SCEC_CGM_InSAR.hdf5
         │   │   └── 20150515T135159_ll_grd
         │   │   └── ....
         │   └── Uncertainties
-        │       └── (undecided)
+        │       └── (not completed)
         └── Velocities
-            ├── velo_unc_grd(undecided)
+            ├── velo_unc_grd(not completed)
             └── velocities_grd
 ```
 
@@ -136,20 +131,25 @@ Results for extracting the GMT grd file of velocities in Track D071 are shown be
 ![Velocities](/example_configs/track_071_vels.png)
 
 
-## Python Installation
+### Python Installation of cgm_library
 The following instructions are useful if you plan to use the cgm_library readers on your own machine to bring HDF5 files into Python dictionaries.   
 * Git clone "InSAR_CGM_readers_writers" repo into a desired location for source code on your local machine.   
-* Install the (fairly minimal) requirements from requirements.txt if necessary (if desired, you can set up dedicated conda environment in requirements.txt).  
+* Install the (fairly minimal) requirements from requirements.txt. If desired, you can set up dedicated conda environment in requirements.txt.  
 * Install software by calling ```python setup.py install``` from the top-level directory of this repository. 
 * Test installation by typing in Python: ```import cgm_library```
 
 
-## Packaging instructions for writing HDF5 file (SCEC CGM Team)
-Directions to package up a CGM InSAR HDF5 file from local files: 
+## SCEC CGM TEAM CORNER
+Packaging instructions for writing CGM InSAR HDF5 file from local files (mostly for SCEC CGM Team): 
 
-1. Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements in requirements.txt if necessary (can set up dedicated conda environment if desired).  Install software by calling ```python setup.py install```    
+1. Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements in requirements.txt. Can set up dedicated conda environment if desired.  Install this software by calling ```python setup.py install``` from the top-level directory of this repository.
 2. Get into directory where you want to do the HDF5 packaging.  
 3. From working directory, call ```cgm_generage_empty_configs.py .``` .  This will generate two empty files into the working directory, "file_level_config.txt" and "TRAC_metadata.txt"
 4. Manually fill in all the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. Information regarding highest-level product metadata or file I/O options specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Just make sure it can be properly found in the file_level_config.
 5. From the working directory, call ```cgm_write_hdf5.py file_level_config.txt```
 
+Goals: 
+
+**For SCEC website:** the CGM website will run a script that extracts a velocity or time series at one or more lon/lat pairs and returns a time series in geoCSV for the user.   
+
+**For advanced users:** the user can download the full SCEC CGM HDF5 files and parse their own useful features with some guidance and reading tools. 
