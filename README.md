@@ -1,11 +1,10 @@
-## Readers and Writers for the SCEC Commuinity Geodetic Model InSAR Products
+# Readers and Writers for  SCEC Commuinity Geodetic Model InSAR Products
 
-## OVERVIEW
-We aim to present the SCEC CGM InSAR Product as a single HDF5 file that can be parsed and presented by the SCEC CGM website. 
+We aim to present the SCEC CGM InSAR Product as one HDF5 file per track, that can be parsed and presented by the SCEC CGM website and other programs. 
 
-**For standard users:** we want the CGM website to run a script that extracts a velocity or time series at one or more lon/lat pairs and returns a time series in geoCSV for the user.   
+**For SCEC website:** the CGM website will run a script that extracts a velocity or time series at one or more lon/lat pairs and returns a time series in geoCSV for the user.   
 
-**For advanced users:** we want the user to download the full SCEC CGM HDF5 file and parse their own useful features with some guidance and reading tools from SCEC. 
+**For advanced users:** the user can download the full SCEC CGM HDF5 files and parse their own useful features with some guidance and reading tools. 
 
 
 ## CGM InSAR HDF5 STRUCTURE 
@@ -50,33 +49,26 @@ SCEC_CGM_InSAR.hdf5
             └── velocities_grd
 ```
 
-## PACKAGING INSTRUCTIONS (for SCEC CGM Team)
-Directions to package up CGM InSAR HDF5 file from local files: 
-
-1. Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements if necessary (can set up dedicated conda environment if desired).  Install software by calling ```python setup.py install```    
-2. Get into directory where you want to do the HDF5 packaging.  
-3. From working directory, call ```cgm_generage_empty_configs.py .``` .  This will generate two empty files into the working directory, "file_level_config.txt" and "TRAC_metadata.txt"
-4. Manually fill in all the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. Information regarding highest-level product metadata or file I/O options specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Just make sure it can be properly found in the file_level_config.
-5. From the working directory, call ```cgm_write_hdf5.py file_level_config.txt```
-
-
 
 ## USER'S CORNER FOR SCEC HDF5 FILE
-1. If you plan to read HDF5 into Python: Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements if necessary (if desired, you can set up dedicated conda environment in requirements.txt).  Install software by calling ```python setup.py install```
-### Extracting Metadata
-2. Check out an HDF5 file.  One option is to view the basic metadata and its contents in bash:  
+* Bash/GMT Users: utilities like h5dump, gdal, and GMT can read the HDF5 file.
+* Python Users: This repository contains an example Python reader to bring HDF5 into a dictionary. See "Python Installation" for installation information.  
+* Matlab Users: This repository contains an example Matlab reader for the HDF5 file.
+
+### Example 1: Extracting Metadata
+Option A: Check out an HDF5 file in bash.  One option is to view the basic metadata and its contents in bash:  
 ```bash
 #!/bin/bash 
 h5dump --contents test_SCEC_CGM_InSAR_v0_0_1.hdf5    # basic table of contents 
 h5dump --header test_SCEC_CGM_InSAR_v0_0_1.hdf5      # detailed metadata table 
-h5dump --a /Product_Metadata/version test_SCEC_CGM_InSAR_v0_0_1.hdf5  # view value of attribute
+h5dump -a /Product_Metadata/filename test_SCEC_CGM_InSAR_v0_0_1.hdf5  # view value of attribute
 ```
-Alternately, you can look at the basic metadata in gdal:
+Option B: Alternately, you can look at the basic metadata in gdal:
 ```bash
 #!/bin/bash
 gdalinfo test_SCEC_CGM_InSAR_v0_0_1.hdf5
 ```
-As a third option, you can look at the basic metadata from a dictionary in Python:
+Option C: As a third option, you can look at the basic metadata from a dictionary in Python:
 ```python
 #!/usr/bin/env python
 import cgm_library
@@ -85,8 +77,9 @@ filename = "test_SCEC_CGM_InSAR_v0_0_1.hdf5"
 cgm_python_data_structure = cgm_library.io_cgm_hdf5.read_cgm_hdf5_full_data(filename);
 print(cgm_python_data_structure[0].keys())
 ```
-### Extracting Time Series
-You can extract pixels as GeoCSV using this library. Each pixel's time series will be saved in a GeoCSV file. 
+
+### Example 2: Extracting Time Series using Python
+You can extract pixels as GeoCSV using this Python library. Each pixel's time series will be saved in a GeoCSV file. 
  ```python
 #!/usr/bin/env python
 import cgm_library
@@ -97,8 +90,8 @@ pixel_list = [reference_pixel, los_angeles];
 cgm_library.hdf5_to_geocsv.extract_csv_from_file("test_SCEC_CGM_InSAR_v0_0_1.hdf5", pixel_list, ".");
 ```
 
-### Extracting Velocities into other formats
-You can extract velocities of individual pixels (returned directly), or of geographic regions (written as CSV or JSON).   
+### Example 3: Extracting Velocities into other formats using Python
+You can extract velocities of individual pixels (returned directly), or of geographic regions (written as CSV or JSON).   Mostly used by the backend of the CGM website. 
  ```python
 #!/usr/bin/env python
 import cgm_library
@@ -114,7 +107,7 @@ cgm_library.hdf5_to_geocsv.velocities_to_json("test_SCEC_CGM_InSAR_v0_0_1.hdf5",
 ```
 
 
-### Extracting Layers
+### Example 4: Extracting Layers using Bash/GMT
 You can also extract a layer of data for a particular track into a GMT grid file. 
 A GMT installation with GDAL is required. 
 (for more: https://docs.generic-mapping-tools.org/latest/cookbook/features.html?highlight=ndvi#reading-more-complex-multi-band-images-or-grids)
@@ -127,7 +120,7 @@ track="Track_D071"
 dataset="Velocities/velocities"   # reference the file's metadata table (h5dump -n) for exact dataset architecture
 outfile="D071_vels.grd"
 
-# EXTACT A SINGLE GRD FILE FROM HDF5 FILE!!!!  
+# EXTACT A SINGLE GRD FILE FROM HDF5 FILE!
 # All three lines are necessary for a complete data extraction.  
 gmt_range=`h5dump -a //$track/Grid_Info/gmt_range $infile | grep -o "[0-9.-]*/[0-9.-]*/[0-9.-]*/[0-9.-]*"`   # value of gmt_range attribute. 
 gmt grdedit $infile=gd?HDF5:"$infile"://$track/$dataset -R$gmt_range -G$outfile   # send layer out to grdfile, using GDAL. 
@@ -143,13 +136,20 @@ Results for extracting the GMT grd file of velocities in Track D071 are shown be
 ![Velocities](/example_configs/track_071_vels.png)
 
 
-## SOFTWARE TO-DOS FOR TEAM
-To implement the HDF5 file format, the CGM team must create:
-1. ~~Function(s) to construct the SCEC CGM HDF5 from the CGM analysis [for internal use only].~~ **DONE**
-2. Example reader functions to read the full SCEC HDF5 file into a practical data structure, as an advanced user would do, in several commonly used programming languages:
-    * ~~Python~~
-    * ~~bash/gmt~~
-    * Matlab
-    * Jupyter Notebook
-3. ~~A tool to extract a certain pixel's time series from the HDF5 and convert it into a geoCSV.~~  
-4. Detailed documentation of the CGM product.
+## Python Installation
+The following instructions are useful if you plan to use the cgm_library readers on your own machine to bring HDF5 files into Python dictionaries.   
+* Git clone "InSAR_CGM_readers_writers" repo into a desired location for source code on your local machine.   
+* Install the (fairly minimal) requirements from requirements.txt if necessary (if desired, you can set up dedicated conda environment in requirements.txt).  
+* Install software by calling ```python setup.py install``` from the top-level directory of this repository. 
+* Test installation by typing in Python: ```import cgm_library```
+
+
+## Packaging instructions for writing HDF5 file (SCEC CGM Team)
+Directions to package up a CGM InSAR HDF5 file from local files: 
+
+1. Git clone "InSAR_CGM_readers_writers" repo onto your local machine.  Install requirements in requirements.txt if necessary (can set up dedicated conda environment if desired).  Install software by calling ```python setup.py install```    
+2. Get into directory where you want to do the HDF5 packaging.  
+3. From working directory, call ```cgm_generage_empty_configs.py .``` .  This will generate two empty files into the working directory, "file_level_config.txt" and "TRAC_metadata.txt"
+4. Manually fill in all the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. Information regarding highest-level product metadata or file I/O options specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Just make sure it can be properly found in the file_level_config.
+5. From the working directory, call ```cgm_write_hdf5.py file_level_config.txt```
+
