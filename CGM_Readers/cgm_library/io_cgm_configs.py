@@ -87,3 +87,20 @@ def write_empty_track_metadata_config(directory):
         configobj.write(configfile)
     print("Writing file %s " % directory + "/empty_track_metadata.txt");
     return;
+
+def build_config_dict(data_dict_list):
+    """
+    Build a file-level-config dictionary from a dictionary of data for one track, instead of reading it from file.
+    """
+    data_dict = data_dict_list[0];  # extract one track worth of data
+    config_object = {};
+    gen_obj = {"scec_cgm_version": data_dict['version'],
+               "website_link": data_dict['website_link'],
+               "documentation_link": data_dict['documentation_link'],
+               "citation_info": data_dict['citation_info'],
+               "contributing_institutions": data_dict['contributing_institutions'],
+               "contributing_researchers": data_dict['contributing_researchers'],
+               "hdf5_file": data_dict['filename'],
+               "doi": data_dict['doi']};
+    config_object["general-config"] = gen_obj;
+    return config_object;

@@ -47,11 +47,11 @@ SCEC_CGM_InSAR.hdf5
 
 ## USER'S CORNER FOR SCEC HDF5 FILE
 * Bash/GMT Users: utilities like h5dump, gdal, and GMT can read the HDF5 file.
-* Python Users: This repository contains an example Python reader to bring HDF5 into a dictionary. See "Python Installation" for installation information.  
+* Python Users: This repository contains an example Python reader based on the h5py library to bring HDF5 into a dictionary. See "Python Installation" for installation information.  
 * Matlab Users: This repository contains an example Matlab reader for the HDF5 file.
 
 ### Example 1: Extracting Metadata
-Option A: Check out an HDF5 file in bash.  One option is to view the basic metadata and its contents in bash:  
+Option A: Check out an HDF5 file in bash.  One option is to view the basic metadata and its contents with h5dump:  
 ```bash
 #!/bin/bash 
 h5dump --contents test_SCEC_CGM_InSAR_v0_0_1.hdf5    # basic table of contents 
@@ -86,7 +86,7 @@ cgm_library.hdf5_to_geocsv.extract_csv_from_file("test_SCEC_CGM_InSAR_v0_0_1.hdf
 ```
 
 ### Example 3: Extracting Velocities into other formats using Python
-You can extract velocities of individual pixels (returned directly), or of geographic regions (written as CSV or JSON).   Mostly used by the backend of the CGM website. 
+You can extract velocities of individual pixels (returned directly), or of geographic regions (written as CSV or JSON).   Mostly just used by the backend of the CGM website. 
  ```python
 #!/usr/bin/env python
 import cgm_library
@@ -134,7 +134,7 @@ Results for extracting the GMT grd file of velocities in Track D071 are shown be
 ### Python Installation of cgm_library
 The following instructions are useful if you plan to use the cgm_library readers on your own machine to bring HDF5 files into Python dictionaries.   
 * Git clone "InSAR_CGM_readers_writers" repo into a desired location for source code on your local machine.   
-* Install the (fairly minimal) requirements from requirements.txt. If desired, you can set up dedicated conda environment in requirements.txt.  
+* Install the (fairly minimal) requirements from requirements.txt. If desired, you can set up a dedicated conda environment using requirements.txt.  
 * Install software by calling ```python setup.py install``` from the top-level directory of this repository. 
 * Test installation by typing in Python: ```import cgm_library```
 

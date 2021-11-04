@@ -19,7 +19,7 @@ cgm_data_structure: a dictionary for each track:
 import h5py, re
 from datetime import date
 import numpy as np
-
+from . import io_cgm_configs
 
 def read_cgm_hdf5_demo_python(input_filename):
     """
@@ -133,19 +133,24 @@ def read_cgm_hdf5_full_data(input_filename):
     return cgm_data_structure;
 
 
-def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocities=True, write_time_series=True):
+def write_cgm_hdf5(cgm_data_structure, configobj=None, output_filename="output.hdf5",
+                   write_velocities=True, write_time_series=True):
     """
     Output function to create HDF5 file from CGM working group's data.
     Useful for individuals who want to package their own data from a Python cgm_data_structure dictionary
 
     :param cgm_data_structure: a list of dictionaries
-    :param configobj: configobj read from file-level config file (can be replaced within the dictionary later)
+    :param configobj: configobj read from file-level config file (if not provided, read from the dictionary)
     :param output_filename: the name of the HDF5 file that will be written.
     :param write_velocities: bool, whether to write velocities into the hdf5 file
     :param write_time_series: bool, whether to write time series into the hdf5 file
     :type output_filename: string
     """
     print("Writing file %s " % output_filename);
+
+    if configobj is None:
+        configobj = io_cgm_configs.build_config_dict(cgm_data_structure);
+
     hf = h5py.File(output_filename, 'w');
     prod_metadata = hf.create_group('Product_Metadata');  # create a metadata group
     prod_metadata.attrs['version'] = str(configobj["general-config"]["scec_cgm_version"]);
@@ -195,19 +200,19 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
         gmt_range = str(np.round(np.min(lon_array), 4))+'/'+str(np.round(np.max(lon_array), 4))+'/' + \
                     str(np.round(np.min(lat_array), 4))+'/'+str(np.round(np.max(lat_array), 4));
         grid_group.attrs["gmt_range"] = gmt_range;
-        tmp_e = grid_group.create_dataset('lkv_E', data=np.flipud(track_dict["lkv_E"]));
+        tmp_e = grid_group.create_dataset('lkv_E', data=np.flipud(np.float32(track_dict["lkv_E"])));
         tmp_e.attrs["node_offset"] = 1;
         tmp_e.dims[1].attach_scale(lon_ds);
         tmp_e.dims[0].attach_scale(lat_ds);
-        tmp_n = grid_group.create_dataset('lkv_N', data=np.flipud(track_dict["lkv_N"]));
+        tmp_n = grid_group.create_dataset('lkv_N', data=np.flipud(np.float32(track_dict["lkv_N"])));
         tmp_n.attrs["node_offset"] = 1;
         tmp_n.dims[1].attach_scale(lon_ds);
         tmp_n.dims[0].attach_scale(lat_ds);
-        tmp_u = grid_group.create_dataset('lkv_U', data=np.flipud(track_dict["lkv_U"]));
+        tmp_u = grid_group.create_dataset('lkv_U', data=np.flipud(np.float32(track_dict["lkv_U"])));
         tmp_u.attrs["node_offset"] = 1;
         tmp_u.dims[1].attach_scale(lon_ds);
         tmp_u.dims[0].attach_scale(lat_ds);
-        tmp_dem = grid_group.create_dataset('dem', data=np.flipud(track_dict["dem"]));
+        tmp_dem = grid_group.create_dataset('dem', data=np.flipud(np.float32(track_dict["dem"])));
         tmp_dem.attrs["node_offset"] = 1;
         tmp_dem.dims[1].attach_scale(lon_ds);
         tmp_dem.dims[0].attach_scale(lat_ds);
@@ -215,7 +220,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
         # Package velocity information
         if write_velocities:
             vel_group = track_data.create_group('Velocities')
-            tmp = vel_group.create_dataset('velocities', data=np.flipud(track_dict["velocities"]));
+            tmp = vel_group.create_dataset('velocities', data=np.flipud(np.float32(track_dict["velocities"])));
             tmp.attrs["node_offset"] = 1;
             tmp.dims[1].attach_scale(lon_ds);
             tmp.dims[0].attach_scale(lat_ds);
@@ -228,7 +233,7 @@ def write_cgm_hdf5(cgm_data_structure, configobj, output_filename, write_velocit
             for keyname in track_dict.keys():
                 if re.match(r"[0-9]{8}T[0-9]{6}", keyname):  # if we have time series slice, such as '20150121T134347'
                     print("  time series: ", keyname);
-                    tmp = ts_group.create_dataset(keyname, data=np.flipud(track_dict[keyname]));
+                    tmp = ts_group.create_dataset(keyname, data=np.flipud(np.float32(track_dict[keyname])));
                     tmp.attrs["node_offset"] = 1;
                     tmp.dims[1].attach_scale(lon_ds);
                     tmp.dims[0].attach_scale(lat_ds);
