@@ -4,7 +4,7 @@ import numpy as np
 from . import io_cgm_hdf5
 
 
-def cgm_to_mintpy(cgm_filename, out_mintpy_filename):
+def convert_cgm_to_mintpy(cgm_filename, out_mintpy_filename):
     """Read CGM data. Write mini file of mintpy data.
 
     :param cgm_filename: string
@@ -42,14 +42,14 @@ def get_cgm_dates(track_dict):
 
 def get_cgm_data_cube(track_dict):
     """
-    Start with a Track_dict. Return a 3D data cube.
+    Start with a Track_dict. Return a 3D data cube flipped in ascending order.
     """
     dates = [x for x in track_dict.keys() if len(x) == 15 and x[0] in ['1', '2']];
     slice_shape = np.shape(track_dict[dates[0]]);
     total_shape = (len(dates), slice_shape[0], slice_shape[1]);
     total_cube = np.zeros(total_shape);
     for i in range(len(dates)):
-        total_cube[i, :, :] = track_dict[dates[i]];
+        total_cube[i, :, :] = np.flipud(track_dict[dates[i]]);
     return total_cube;
 
 
@@ -66,9 +66,10 @@ def write_pseudo_mintpy_file(track_dict, output_filename):
 
     print("Writing file %s" % output_filename);
     hf = h5py.File(output_filename, 'w');
-    bperp = hf.create_dataset('bperp', (len(dtarray),));
-    date = hf.create_dataset('date', (len(dtarray),), dtype='|S8', data=dtarray);
-    ts = hf.create_dataset('timeseries', np.shape(data_cube), dtype='<f4', data=data_cube);
+    hf.create_dataset('bperp', (len(dtarray),));
+    hf.create_dataset('date', (len(dtarray),), dtype='|S8', data=dtarray);
+    # THIS WANTS TO BE FLIPPED NORTH SOUTH
+    hf.create_dataset('timeseries', np.shape(data_cube), dtype='<f4', data=np.multiply(data_cube, 0.001));  # in meters
     hf.attrs["LENGTH"] = np.shape(data_cube)[1];
     hf.attrs["WIDTH"] = np.shape(data_cube)[2];
     hf.attrs["START_DATE"] = dtarray[0];

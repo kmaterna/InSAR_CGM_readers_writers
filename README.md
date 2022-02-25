@@ -147,3 +147,36 @@ Packaging instructions for writing CGM InSAR HDF5 file from local files (mostly 
 3. From working directory, call ```cgm_generage_empty_configs.py .``` .  This will generate two empty files into the working directory, "file_level_config.txt" and "TRAC_metadata.txt"
 4. Manually fill in all the fields for the appropriate track(s) being packaged in both file_level_config.txt and TRAC_metadata.txt. Information regarding highest-level product metadata or file I/O options specific to your file system will be placed in the file_directory config. Track-specific metadata (nothing file-specific) will be placed in the TRAC_metadata config. When you're done, feel free to move TRAC_metadata into a more reasonable directory closer to the data, and feel free to rename it. Just make sure it can be properly found in the file_level_config.
 5. From the working directory, call ```cgm_write_hdf5.py file_level_config.txt```
+
+
+## CGM HDF5 to Mintpy HDF5 Time Series
+Converting a CGM HDF5 file into a MintPy timeseries file will produce:
+- a time series file in mintpy hdf5, in units of meters
+- grids stored as south-to-north array (no need to flip)
+- the most important metadata attached (reference pixel, reference image, grid sizes)
+
+To start, enter your favorite Python environment and make sure you have:
+* h5py
+* numpy
+* netCDF4
+
+Clone the CGM reader repo into your favorite Software place on your computer:
+```git clone https://github.com/kmaterna/InSAR_CGM_readers_writers.git```
+
+From that directory, in the conda environment you wish to use:
+```python setup.py install```
+
+Then, you're ready to convert files into mintpy hdf5.  An example script would be:
+
+```python 
+#!/usr/bin/env python
+
+import cgm_library
+
+filedict = {"cgmfile": "path/to/cgm/COMB_hdf5/A064/A064_COMB_CGM_InSAR_v0_0_1.hdf5",
+            "output_file": "A064_ts_mintpy.h5"};
+
+if __name__ == "__main__":
+    cgm_library.cgm_to_mintpy.convert_cgm_to_mintpy(filedict["cgmfile"], filedict["output_file"]);
+    cgm_library.cgm_to_mintpy.read_overview_mintpy_file(filedict["output_file"]);  # just to confirm
+```
