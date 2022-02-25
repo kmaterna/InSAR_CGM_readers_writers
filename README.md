@@ -152,7 +152,6 @@ Packaging instructions for writing CGM InSAR HDF5 file from local files (mostly 
 ## CGM HDF5 to Mintpy HDF5 Time Series
 Converting a CGM HDF5 file into a MintPy timeseries file will produce:
 - a time series file in mintpy hdf5, in units of meters
-- grids stored as south-to-north array (no need to flip)
 - the most important metadata attached (reference pixel, reference image, grid sizes)
 
 To start, enter your favorite Python environment and make sure you have:
@@ -179,4 +178,10 @@ filedict = {"cgmfile": "path/to/cgm/COMB_hdf5/A064/A064_COMB_CGM_InSAR_v0_0_1.hd
 if __name__ == "__main__":
     cgm_library.cgm_to_mintpy.convert_cgm_to_mintpy(filedict["cgmfile"], filedict["output_file"]);
     cgm_library.cgm_to_mintpy.read_overview_mintpy_file(filedict["output_file"]);  # just to confirm
+```
+
+Then for computing and viewing velocity uncertainties: 
+```bash
+timeseries2velocity.py A064_ts_mintpy.h5 --bootstrap --bc 1000    # takes about an hour
+view.py velocity.h5 velocityStd --pts-ms 5 --pts-marker ks -u 'cm/yr' --flip-ud -v 0 1
 ```

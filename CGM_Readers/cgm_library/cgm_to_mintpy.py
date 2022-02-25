@@ -49,7 +49,7 @@ def get_cgm_data_cube(track_dict):
     total_shape = (len(dates), slice_shape[0], slice_shape[1]);
     total_cube = np.zeros(total_shape);
     for i in range(len(dates)):
-        total_cube[i, :, :] = np.flipud(track_dict[dates[i]]);
+        total_cube[i, :, :] = track_dict[dates[i]];
     return total_cube;
 
 
